@@ -1,14 +1,22 @@
 #ifndef chesstypes_H
 #define chesstypes_H
 
+#include <stdbool.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define COLUMNS 8
 #define ROWS 8
 #define MAX_MOVES_PER_GAME 500
 
+/*
 typedef enum {
   false,
   true
 } bool;
+*/
 
 /*
 const int COLUMNS = 8;
@@ -46,6 +54,7 @@ typedef enum row {
 } Row;
 
 typedef enum piece {
+  Empty,
   WhiteQueen,
   WhiteKing,
   WhiteBishop,
@@ -58,7 +67,6 @@ typedef enum piece {
   BlackRook,
   BlackKnight,
   BlackPawn,
-  Empty,
   Unknown
 } Piece;
 
@@ -91,7 +99,7 @@ typedef struct {
   LiftedPiece firstLifted;
   LiftedPiece secondLifted;
 
-  SquareChange change;  
+  SquareChange change;
 
 } MoveBuffer;
 
@@ -143,5 +151,21 @@ typedef struct {
   ChessMove moves[MAX_MOVES_PER_GAME];
 
 } ChessGame;
+
+extern void setupEmptyBoard(BoardState* boardState);
+
+extern void setupStartPos(BoardState* boardState);
+
+/*
+* Takes a position on the board (row, colum) and returns
+* which piece is on that square when the board is setup 
+* correctly.
+* Can return Empty
+*/
+extern Piece getForStartPos(BoardPos* pos);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // chesstypes_H

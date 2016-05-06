@@ -2,7 +2,7 @@
 #include "./chessutils.h"
 #include "./chessmoves.h"
 
-void handleBoardChange(
+void handleMoveBoardChange(
   MoveBuffer *moveBuf, BoardState *boardState, ChessGame *currGame) 
 {
 
@@ -87,10 +87,10 @@ void handleBoardChange(
       // that the boardState was wrong...
     }
 
-    moveBuf->firstLifted.piece = lifted;
-    moveBuf->firstLifted.startPos.row = 
+    moveBuf->secondLifted.piece = lifted;
+    moveBuf->secondLifted.startPos.row = 
       moveBuf->change.square.row;
-    moveBuf->firstLifted.startPos.column = 
+    moveBuf->secondLifted.startPos.column = 
       moveBuf->change.square.column;
 
     return;
@@ -102,7 +102,7 @@ void handleBoardChange(
 
   // two pieces on the move, now returning to board
   if ( moveBuf->change.nowOccupied && 
-      moveBuf->secondLifted.piece == Empty ) {
+      moveBuf->secondLifted.piece != Empty ) {
 
     // handle en passant and castling by just checking 
     // the 'lifted pieces' and current board state, to see
@@ -138,7 +138,7 @@ void handleBoardChange(
 
     ChessMove *doneMove = &currGame->moves[currMoveInd];
 
-    doneMove->type = Move;
+    doneMove->type = Capture;
 
     doneMove->activePiece = activeLifted->piece;
     doneMove->passivePiece = passiveLifted->piece;

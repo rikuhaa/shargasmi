@@ -1,7 +1,11 @@
 #ifndef chessutils_H
 #define chessutils_H
 
-#include "./chesstypes.h"
+#include "chesstypes.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*
 * Checks if the piece is in a position on the board that
@@ -18,14 +22,6 @@ extern bool isInPromotePos(Piece* piece);
 * false.
 */
 extern bool isInStartPos(Piece* piece);
-
-/*
-* Takes a position on the board (row, colum) and returns
-* which piece is on that square when the board is setup 
-* correctly.
-* Can return Empty
-*/
-extern Piece getForStartPos(BoardPos* pos);
 
 /*
 *
@@ -49,8 +45,8 @@ extern Piece swapPiece(Piece newPiece, BoardState* boardState, BoardPos* boardPo
 
 extern bool belongsToPlayer(Player player, Piece piece);
 
-extern void setupEmptyBoard(BoardState* boardState);
-
-extern void setupStartPos(BoardState* boardState);
+#ifdef __cplusplus
+}
+#endif
 
 #endif // chessutils_H

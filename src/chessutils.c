@@ -58,36 +58,3 @@ char getPieceSANName(Piece piece) {
 
 }
 
-void setupEmptyBoard(BoardState* boardState) {
-  for ( int row = 0; row < ROWS; row++ ) {
-    for ( int column = 0; column < COLUMNS; column++ ) {
-      boardState->squareStates[row][column] = Empty;
-    }
-  }
-}
-
-Piece getForStartPos(BoardPos* pos) {
-  if ( pos->row == blackHighPieceStartRow ) {
-    return highPieceStartBlack[pos->column];
-  } else if ( pos->row == blackPawnStartRow ) {
-    return BlackPawn;
-  } else if ( pos->row == whiteHighPieceStartRow ) {
-    return highPieceStartWhite[pos->column];
-  } else if ( pos->row == whitePawnStartRow ) {
-    return WhitePawn;
-  } else {
-    return Empty;
-  }
-}
-
-void setupStartPos(BoardState* boardState)  {
-  boardState->active = White;
-  BoardPos pos;
-  for ( int row = 0; row < ROWS; row++ ) {
-    for ( int column = 0; column < COLUMNS; column++ ) {
-      pos.row = row;
-      pos.column = column;
-      boardState->squareStates[row][column] = getForStartPos(&pos);
-    }
-  }
-}
