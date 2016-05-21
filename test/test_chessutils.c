@@ -212,3 +212,113 @@ void test_export_fen_start_pos(void)
 
 	TEST_ASSERT_EQUAL_STRING(corrFen, exported.piecePlaces);
 }
+
+void test_fen_round_trip(void)
+{
+	FEN fen;
+	BoardState boardState;
+
+	char *startFen1 = "6r1/2p3P1/8/8/2p5/2P5/6R1/2k1K3";
+
+	// test pos 1
+	strncpy(fen.piecePlaces, startFen1,
+		FEN_POS_MAX_CHARS);
+
+	importFEN(&fen, &boardState);
+
+	TEST_ASSERT_EQUAL_INT(BlackRook, 
+		getPieceRowCol(&boardState, Row8, ColG));
+	TEST_ASSERT_EQUAL_INT(WhitePawn, 
+		getPieceRowCol(&boardState, Row3, ColC));
+	TEST_ASSERT_EQUAL_INT(Empty, 
+		getPieceRowCol(&boardState, Row8, ColH));
+	TEST_ASSERT_EQUAL_INT(Empty, 
+		getPieceRowCol(&boardState, Row1, ColA));
+
+	exportFEN(&fen, &boardState);
+
+	TEST_ASSERT_EQUAL_STRING(startFen1,
+		&fen.piecePlaces);
+
+	// test pos 2
+	char *startFen2 = "8/8/8/5Bp1/7k/8/4pPKP/8";
+
+	strncpy(fen.piecePlaces, startFen2,
+		FEN_POS_MAX_CHARS);
+
+	importFEN(&fen, &boardState);
+
+	TEST_ASSERT_EQUAL_INT(Empty, 
+		getPieceRowCol(&boardState, Row8, ColG));
+	TEST_ASSERT_EQUAL_INT(WhiteBishop, 
+		getPieceRowCol(&boardState, Row5, ColF));
+	TEST_ASSERT_EQUAL_INT(BlackPawn, 
+		getPieceRowCol(&boardState, Row5, ColG));
+	TEST_ASSERT_EQUAL_INT(WhitePawn, 
+		getPieceRowCol(&boardState, Row2, ColH));
+	TEST_ASSERT_EQUAL_INT(Empty,
+		getPieceRowCol(&boardState, Row6, ColC));
+
+	exportFEN(&fen, &boardState);
+
+	TEST_ASSERT_EQUAL_STRING(startFen2,
+		&fen.piecePlaces);
+
+	// test pos 3
+	char *startFen3 = "7b/p3KBkp/7p/2p4p/3p3P/p2P4/P7/8";
+
+	strncpy(fen.piecePlaces, startFen3,
+		FEN_POS_MAX_CHARS);
+
+	importFEN(&fen, &boardState);
+
+	TEST_ASSERT_EQUAL_INT(BlackBishop, 
+		getPieceRowCol(&boardState, Row8, ColH));
+	TEST_ASSERT_EQUAL_INT(WhiteKing, 
+		getPieceRowCol(&boardState, Row7, ColE));
+	TEST_ASSERT_EQUAL_INT(BlackKing, 
+		getPieceRowCol(&boardState, Row7, ColG));
+	TEST_ASSERT_EQUAL_INT(WhitePawn, 
+		getPieceRowCol(&boardState, Row2, ColA));
+	TEST_ASSERT_EQUAL_INT(Empty,
+		getPieceRowCol(&boardState, Row3, ColC));
+
+	exportFEN(&fen, &boardState);
+
+	TEST_ASSERT_EQUAL_STRING(startFen3,
+		&fen.piecePlaces);
+
+	// test pos 4
+	char *startFen4 = 
+		"7B/1p3p1p/1P4k1/5p2/3p1p1K/3P1PN1/3PP2p/6b1";
+
+	strncpy(fen.piecePlaces, startFen4,
+		FEN_POS_MAX_CHARS);
+
+	importFEN(&fen, &boardState);
+
+	TEST_ASSERT_EQUAL_INT(WhiteBishop, 
+		getPieceRowCol(&boardState, Row8, ColH));
+	TEST_ASSERT_EQUAL_INT(BlackPawn, 
+		getPieceRowCol(&boardState, Row7, ColB));
+	TEST_ASSERT_EQUAL_INT(Empty, 
+		getPieceRowCol(&boardState, Row7, ColC));
+	TEST_ASSERT_EQUAL_INT(Empty, 
+		getPieceRowCol(&boardState, Row7, ColD));
+	TEST_ASSERT_EQUAL_INT(Empty,
+		getPieceRowCol(&boardState, Row7, ColE));
+	TEST_ASSERT_EQUAL_INT(BlackPawn,
+		getPieceRowCol(&boardState, Row7, ColF));
+	TEST_ASSERT_EQUAL_INT(Empty,
+		getPieceRowCol(&boardState, Row7, ColG));
+	TEST_ASSERT_EQUAL_INT(BlackPawn,
+		getPieceRowCol(&boardState, Row7, ColH));
+	TEST_ASSERT_EQUAL_INT(WhiteKnight,
+		getPieceRowCol(&boardState, Row3, ColG));
+
+	exportFEN(&fen, &boardState);
+
+	TEST_ASSERT_EQUAL_STRING(startFen4,
+		&fen.piecePlaces);
+
+}
