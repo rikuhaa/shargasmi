@@ -1,6 +1,7 @@
 #include "unity.h"
 #include "chessutils.h"
 #include "chesstypes.h"
+#include "string.h"
 
 void setUp(void)
 {
@@ -114,4 +115,100 @@ void test_belongs_to_player(void)
 	TEST_ASSERT(!belongsToPlayer(Neutral, Empty));
 	TEST_ASSERT(!belongsToPlayer(Neutral, Unknown));	
 	
+}
+
+void test_get_fen_name_from_piece(void)
+{
+	TEST_ASSERT_EQUAL_INT('P', getPieceFENName(WhitePawn));
+	TEST_ASSERT_EQUAL_INT('N', getPieceFENName(WhiteKnight));
+	TEST_ASSERT_EQUAL_INT('B', getPieceFENName(WhiteBishop));
+	TEST_ASSERT_EQUAL_INT('R', getPieceFENName(WhiteRook));
+	TEST_ASSERT_EQUAL_INT('Q', getPieceFENName(WhiteQueen));
+	TEST_ASSERT_EQUAL_INT('K', getPieceFENName(WhiteKing));
+	
+	TEST_ASSERT_EQUAL_INT('p', getPieceFENName(BlackPawn));
+	TEST_ASSERT_EQUAL_INT('n', getPieceFENName(BlackKnight));
+	TEST_ASSERT_EQUAL_INT('b', getPieceFENName(BlackBishop));
+	TEST_ASSERT_EQUAL_INT('r', getPieceFENName(BlackRook));
+	TEST_ASSERT_EQUAL_INT('q', getPieceFENName(BlackQueen));
+	TEST_ASSERT_EQUAL_INT('k', getPieceFENName(BlackKing));
+	
+	TEST_ASSERT_EQUAL_INT('X', getPieceFENName(Unknown));
+}
+
+void test_get_piece_from_fen_name(void)
+{
+	TEST_ASSERT_EQUAL_INT(WhitePawn, getPieceFromFENName('P'));
+	TEST_ASSERT_EQUAL_INT(WhiteKnight, getPieceFromFENName('N'));
+	TEST_ASSERT_EQUAL_INT(WhiteBishop, getPieceFromFENName('B'));
+	TEST_ASSERT_EQUAL_INT(WhiteRook, getPieceFromFENName('R'));
+	TEST_ASSERT_EQUAL_INT(WhiteQueen, getPieceFromFENName('Q'));
+	TEST_ASSERT_EQUAL_INT(WhiteKing, getPieceFromFENName('K'));
+	
+	TEST_ASSERT_EQUAL_INT(BlackPawn, getPieceFromFENName('p'));
+	TEST_ASSERT_EQUAL_INT(BlackKnight, getPieceFromFENName('n'));
+	TEST_ASSERT_EQUAL_INT(BlackBishop, getPieceFromFENName('b'));
+	TEST_ASSERT_EQUAL_INT(BlackRook, getPieceFromFENName('r'));
+	TEST_ASSERT_EQUAL_INT(BlackQueen, getPieceFromFENName('q'));
+	TEST_ASSERT_EQUAL_INT(BlackKing, getPieceFromFENName('k'));
+	
+	TEST_ASSERT_EQUAL_INT(Unknown, getPieceFromFENName('Z'));
+	TEST_ASSERT_EQUAL_INT(Unknown, getPieceFromFENName('1'));
+	TEST_ASSERT_EQUAL_INT(Unknown, getPieceFromFENName('2'));
+	TEST_ASSERT_EQUAL_INT(Unknown, getPieceFromFENName(';'));
+	TEST_ASSERT_EQUAL_INT(Unknown, getPieceFromFENName(','));
+	TEST_ASSERT_EQUAL_INT(Unknown, getPieceFromFENName('/'));
+
+}
+
+void testBoardPiecesMatch(BoardState* boardA, BoardState* boardB)
+{
+	char debugStr[50]; 
+	for ( int row = ROWS - 1; row >= 0; row-- ) {
+		for ( int column = 0; column < COLUMNS; column++ ) {
+			sprintf(debugStr,
+				"Board place: row=%i, column=%i", row, column);
+			TEST_ASSERT_EQUAL_INT_MESSAGE( 
+				boardA->squareStates[row][column],
+				boardB->squareStates[row][column],
+				debugStr);
+
+		}
+	}
+
+}
+
+void test_import_fen_start_pos(void) 
+{
+	
+	FEN toImport;
+	BoardState importFromFen;
+
+	strncpy(toImport.piecePlaces, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR",
+		FEN_POS_MAX_CHARS);
+
+	BoardState setupToStartPos;
+
+	importFEN(&toImport, &importFromFen);
+
+	setupStartPos(&setupToStartPos);
+
+	testBoardPiecesMatch(&setupToStartPos, &importFromFen);
+
+}
+
+void test_export_fen_start_pos(void) 
+{
+	
+	FEN exported;
+
+	char *corrFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
+
+	BoardState setupToStartPos;
+
+	setupStartPos(&setupToStartPos);
+
+	exportFEN(&exported, &setupToStartPos);
+
+	TEST_ASSERT_EQUAL_STRING(corrFen, exported.piecePlaces);
 }

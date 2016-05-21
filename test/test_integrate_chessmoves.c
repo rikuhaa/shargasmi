@@ -22,6 +22,37 @@ void tearDown(void)
 {
 }
 
+void makeSubMove(Column col, Row row, bool nowOccupied) {
+
+	moveBuf.change.square.column = col;
+	moveBuf.change.square.row = row;
+	moveBuf.change.nowOccupied = nowOccupied;
+
+	handleMoveBoardChange(
+		&moveBuf, &board, &game);
+
+}
+
+void makeNormalMove(Column startCol, Row startRow, Column endCol, Row endRow) {
+
+	makeSubMove(startCol, startRow, false);
+
+	makeSubMove(endCol, endRow, true);
+
+}
+
+void makeCapturingMove(Column capturingStartCol, Row capturingStartRow, 
+	Column toBeCapturedCol, Row toBeCapturedRow) {
+
+	makeSubMove(capturingStartCol, capturingStartRow, false);
+
+	makeSubMove(toBeCapturedCol, toBeCapturedRow, false);
+
+	// the game state must know which one was the inactive piece
+	makeSubMove(toBeCapturedCol, toBeCapturedRow, true);
+
+}
+
 void test_record_first_moving_piece(void) 
 {
 
@@ -38,6 +69,147 @@ void test_record_first_moving_piece(void)
 	TEST_ASSERT_EQUAL_INT(Row7, moveBuf.firstLifted.startPos.row);
 	
 	TEST_ASSERT_EQUAL_INT(Empty, moveBuf.secondLifted.piece);
+
+	TEST_ASSERT_EQUAL_INT(0, game.finMovesCount);
+
+}
+
+void test_simle_pawn_opening(void) {
+
+	// white king pawn two squares forward
+	makeNormalMove(ColE, Row2, ColE, Row4);
+
+	// black king pawn too
+	makeNormalMove(ColE, Row7, ColE, Row5);
+
+	BoardPos pos;
+	pos.column = ColE;
+	pos.row = Row4;
+
+	Piece inE4 = getPiece(&board, &pos);
+
+	TEST_ASSERT_EQUAL_INT(WhitePawn, inE4);
+
+	pos.row = Row5;
+
+	Piece inE5 = getPiece(&board, &pos);
+
+	TEST_ASSERT_EQUAL_INT(BlackPawn, inE5);
+
+	// original squares must be empty
+	pos.row = Row2;
+
+	Piece inE2 = getPiece(&board, &pos);
+
+	TEST_ASSERT_EQUAL_INT(Empty, inE2);
+
+	pos.row = Row7;
+
+	Piece inE7 = getPiece(&board, &pos);
+
+	TEST_ASSERT_EQUAL_INT(Empty, inE7);
+
+	// two moves should have been made
+
+	TEST_ASSERT_EQUAL_INT(2, game.finMovesCount);
+
+}
+
+void test_simle_pawn_opening_sacrifice(void) {
+
+	// white king pawn two squares forward
+	makeNormalMove(ColE, Row2, ColE, Row4);
+
+	// black queen moves to position where it can be captured
+	makeNormalMove(ColD, Row7, ColD, Row5);
+
+	BoardPos pos;
+	pos.column = ColE;
+	pos.row = Row4;
+
+	Piece inE4 = getPiece(&board, &pos);
+
+	TEST_ASSERT_EQUAL_INT(WhitePawn, inE4);
+
+	pos.row = Row5;
+	pos.column = ColD;
+
+	Piece inD5 = getPiece(&board, &pos);
+
+	TEST_ASSERT_EQUAL_INT(BlackPawn, inD5);
+
+	// original squares must be empty
+	pos.row = Row2;
+	pos.column = ColE;
+
+	Piece inE2 = getPiece(&board, &pos);
+
+	TEST_ASSERT_EQUAL_INT(Empty, inE2);
+
+	pos.row = Row7;
+	pos.column = ColD;
+
+	Piece inD7 = getPiece(&board, &pos);
+
+	TEST_ASSERT_EQUAL_INT(Empty, inD7);
+
+	// two moves should have been made
+
+	TEST_ASSERT_EQUAL_INT(2, game.finMovesCount);
+
+	makeCapturingMove(ColE, Row4, ColD, Row5);
+
+	// third move should have been made
+
+	TEST_ASSERT_EQUAL_INT(3, game.finMovesCount);
+
+	pos.row = Row5;
+	pos.column = ColD;
+
+	Piece inD5afterCapture = getPiece(&board, &pos);
+
+	TEST_ASSERT_EQUAL_INT(WhitePawn, inD5afterCapture);
+
+	pos.row = Row4;
+	pos.column = ColE;
+
+	Piece inE4afterCapture = getPiece(&board, &pos);
+
+	TEST_ASSERT_EQUAL_INT(Empty, inE4afterCapture);
+}
+
+
+void test_put_back_to_board_sequence(void)
+{
+	moveBuf.change.square.column = ColE;
+	moveBuf.change.square.row = Row8;
+
+	moveBuf.change.nowOccupied = false;
+
+	handleMoveBoardChange(
+		&moveBuf, &board, &game);
+
+	TEST_ASSERT_EQUAL_INT(BlackKing, moveBuf.firstLifted.piece);
+	TEST_ASSERT_EQUAL_INT(ColE, moveBuf.firstLifted.startPos.column);
+	TEST_ASSERT_EQUAL_INT(Row8, moveBuf.firstLifted.startPos.row);
+
+	TEST_ASSERT_EQUAL_INT(Empty, moveBuf.secondLifted.piece);
+
+	TEST_ASSERT_EQUAL_INT(0, game.finMovesCount);
+
+	// put the king back to the starting square
+	moveBuf.change.square.column = ColE;
+	moveBuf.change.square.row = Row8;
+
+	moveBuf.change.nowOccupied = true;
+
+	handleMoveBoardChange(
+		&moveBuf, &board, &game);
+
+	// test that moves are ignored
+
+	TEST_ASSERT_EQUAL_INT(Empty, moveBuf.secondLifted.piece);
+	TEST_ASSERT_EQUAL_INT(Empty, moveBuf.firstLifted.piece);
 
 	TEST_ASSERT_EQUAL_INT(0, game.finMovesCount);
 
@@ -85,7 +257,11 @@ void test_simple_move_sequence(void)
   	TEST_ASSERT_EQUAL_INT(Row3, lastMove.endSquare.row);
   	
   	TEST_ASSERT_EQUAL_INT(Move, lastMove.type);
-	
+
+  	// assert buffer empited
+  	TEST_ASSERT_EQUAL_INT(Empty, moveBuf.firstLifted.piece);
+	TEST_ASSERT_EQUAL_INT(Empty, moveBuf.secondLifted.piece);
+
 }
 
 void test_simple_capture_sequence(void) 
@@ -145,5 +321,9 @@ void test_simple_capture_sequence(void)
   	TEST_ASSERT_EQUAL_INT(Row6, lastMove.endSquare.row);
   	
   	TEST_ASSERT_EQUAL_INT(Capture, lastMove.type);
+
+  	// assert buffer empited
+  	TEST_ASSERT_EQUAL_INT(Empty, moveBuf.firstLifted.piece);
+	TEST_ASSERT_EQUAL_INT(Empty, moveBuf.secondLifted.piece);
 
 }

@@ -13,7 +13,7 @@ extern "C" {
 * True if WhitePawn on row 8 or BlackPawn on row 1,
 * false otherwise.
 */
-extern bool isInPromotePos(Piece* piece);
+extern bool isInPromotePos(Piece piece);
 
 /*
 * Returns true if the given piece is on its correct start
@@ -21,12 +21,16 @@ extern bool isInPromotePos(Piece* piece);
 * If called for "meta" Piece (Unknown or Empty) returns
 * false.
 */
-extern bool isInStartPos(Piece* piece);
+extern bool isInStartPos(Piece piece);
 
 /*
 *
 */
 extern char* getSAN(ChessMove* move);
+
+extern char getPieceFENName(Piece piece);
+
+extern Piece getPieceFromFENName(char name);
 
 /*
 * Returns which piece currently occupies square 'boardPos'
@@ -35,6 +39,8 @@ extern char* getSAN(ChessMove* move);
 */
 extern Piece getPiece(BoardState* boardState, BoardPos* boardPos);
 
+extern Piece getPieceRowCol(BoardState* boardState, Row row, Column column);
+
 /*
 * Puts the 'newPiece' to the specified square on the board,
 * and returns the Piece that was on the square earlier.
@@ -42,6 +48,10 @@ extern Piece getPiece(BoardState* boardState, BoardPos* boardPos);
 * can also be "meta" pieces, mainly Empty.
 */
 extern Piece swapPiece(Piece newPiece, BoardState* boardState, BoardPos* boardPos);
+
+extern void importFEN(FEN* fen, BoardState* boardState);
+
+extern void exportFEN(FEN* fen, BoardState* boardState);
 
 extern bool belongsToPlayer(Player player, Piece piece);
 

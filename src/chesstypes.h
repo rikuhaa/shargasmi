@@ -11,6 +11,9 @@ extern "C" {
 #define ROWS 8
 #define MAX_MOVES_PER_GAME 500
 
+// 8 per row, 7 times '/' and '/0' to end the string
+#define FEN_POS_MAX_CHARS 72
+
 /*
 typedef enum {
   false,
@@ -151,6 +154,12 @@ typedef struct {
   ChessMove moves[MAX_MOVES_PER_GAME];
 
 } ChessGame;
+
+typedef struct {
+
+  char piecePlaces[FEN_POS_MAX_CHARS];
+
+} FEN;
 
 extern void setupEmptyBoard(BoardState* boardState);
 

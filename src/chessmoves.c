@@ -11,6 +11,7 @@ void handleMoveBoardChange(
     if ( moveBuf->change.nowOccupied ) {
       // this is an error situation
       // first sub-move cannot add a new piece to the board
+
     }    
 
     Piece lifted = swapPiece(Empty, boardState, &(moveBuf->change.square));
@@ -45,6 +46,23 @@ void handleMoveBoardChange(
 
     int currMoveInd = currGame->finMovesCount;
 
+    // there is only one semi-allowed situation
+    // lowering the piece back to same square
+    // ; maybe there could be a setting to 
+    // mark this as error, but as long as
+    // not trying to actually enforce rules
+    // should be good to allow this
+
+    if ( moveBuf->change.square.row == moveBuf->firstLifted.startPos.row &&
+      moveBuf->change.square.column == moveBuf->firstLifted.startPos.column ) {
+      // empty buffer to start, but don't 
+      // record as a move
+
+      clearMoveBuffer(moveBuf);
+
+      return;
+    }
+
     // if max-move, error...
 
     ChessMove *doneMove = &currGame->moves[currMoveInd];
@@ -73,6 +91,8 @@ void handleMoveBoardChange(
     if ( ! belongsToPlayer(boardState->active, doneMove->activePiece) ) {
       // error, normal move can only be done with own pieces
     }
+
+    clearMoveBuffer(moveBuf);
     
     return;
   }
