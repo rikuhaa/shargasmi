@@ -53,6 +53,17 @@ void makeCapturingMove(Column capturingStartCol, Row capturingStartRow,
 
 }
 
+void boardEqualsFen(BoardState* boardState, char* fenStr)
+{	
+	FEN testFen;
+
+	exportFEN(&testFen, boardState);
+
+	TEST_ASSERT_EQUAL_STRING(fenStr,
+		&testFen.piecePlaces);
+
+}
+
 void test_record_first_moving_piece(void) 
 {
 
@@ -176,6 +187,9 @@ void test_simle_pawn_opening_sacrifice(void) {
 	Piece inE4afterCapture = getPiece(&board, &pos);
 
 	TEST_ASSERT_EQUAL_INT(Empty, inE4afterCapture);
+
+	boardEqualsFen(&board,
+		"rnbqkbnr/ppp1pppp/8/3P4/8/8/PPPP1PPP/RNBQKBNR");
 }
 
 
