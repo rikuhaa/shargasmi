@@ -28,6 +28,8 @@ extern bool isInStartPos(Piece piece);
 */
 extern char* getSAN(ChessMove* move);
 
+extern int writeMoveLan(char* writeTo, ChessMove* move);
+
 extern char getPieceFENName(Piece piece);
 
 extern Piece getPieceFromFENName(char name);

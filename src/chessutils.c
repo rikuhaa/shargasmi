@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <ctype.h>
 #include "./chesstypes.h"
 #include "./chessutils.h"
 
@@ -585,4 +586,62 @@ void importFenFromString(FEN* fen, char* fenString)
 
   fen->fullMoveCount = fullMoveCount;
   
+}
+
+
+int writeMoveLan(char* writeTo, ChessMove* move)
+{
+  char* startPointer = writeTo;
+  if ( move->type == Move || move->type == Capture ) {
+    if ( ! (move->activePiece == WhitePawn || 
+        move->activePiece == BlackPawn) ) {
+      *writeTo = toupper(getPieceFENName(move->activePiece));
+      writeTo++;
+    }
+    
+    *writeTo = getColumnName(move->startSquare.column);
+    writeTo++;
+    *writeTo = getRowName(move->startSquare.row);
+    writeTo++;
+    
+    if ( move->type == Move ) {
+      *writeTo = '-';
+    } else {
+      *writeTo = 'x';
+    }
+    writeTo++;
+
+    *writeTo = getColumnName(move->endSquare.column);
+    writeTo++;
+    *writeTo = getRowName(move->endSquare.row);
+    writeTo++;
+
+  } else if ( move->type == Castling ) {
+    *writeTo = 'O';
+    writeTo++;
+    *writeTo = '-';
+    writeTo++;
+    *writeTo = 'O';
+    writeTo++;
+    if ( move->endSquare.column == ColB ) {
+      // queen side castling is 'O-O-O'
+      *writeTo = '-';
+      writeTo++;
+      *writeTo = 'O';
+      writeTo++;
+    } 
+    // else: could check that this is ColG, others are errors...
+    // king side castling is 'O-O'
+  } else {
+
+    // TODO should be some kind of promotion then
+    // PromotionQueen,
+    // PromotionRook,
+    // PromotionBishop,
+    // PromotionKnight
+  }
+
+  // who many characters were written
+  return writeTo - startPointer;
+
 }

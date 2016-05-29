@@ -433,3 +433,45 @@ void test_import_start_pos_from_fen_str(void)
 	TEST_ASSERT(isCastlingAvailable(imported.canCastleRooks, BlackQueenSide));
 
 }
+
+// TODO more tests to FEN conversions
+
+void test_write_move_lan_simple_moves(void)
+{
+	ChessMove moveToTest;
+	char resBuffer[10];
+
+	moveToTest.activePiece = WhitePawn;
+
+	moveToTest.startSquare.column = ColE;
+	moveToTest.startSquare.row = Row2;
+
+	moveToTest.endSquare.column = ColE;
+	moveToTest.endSquare.row = Row4;
+
+	moveToTest.type = Move;
+
+	int writtenChars = writeMoveLan(resBuffer, &moveToTest);
+
+	resBuffer[writtenChars] = '\0';
+
+	TEST_ASSERT_EQUAL_STRING("e2-e4", resBuffer);
+
+	moveToTest.activePiece = BlackBishop;
+
+	moveToTest.startSquare.column = ColG;
+	moveToTest.startSquare.row = Row2;
+
+	moveToTest.endSquare.column = ColA;
+	moveToTest.endSquare.row = Row8;
+
+	moveToTest.type = Move;
+
+	writtenChars = writeMoveLan(resBuffer, &moveToTest);
+
+	resBuffer[writtenChars] = '\0';
+
+	TEST_ASSERT_EQUAL_STRING("Bg2-a8", resBuffer);
+
+
+}
