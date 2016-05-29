@@ -26,6 +26,12 @@ void setupEmptyBoard(BoardState* boardState) {
 
 void setupStartPos(BoardState* boardState)  {
   boardState->active = White;
+  boardState->halfMoveClock = 0;
+  boardState->fullMoveCount = 1;
+  boardState->enpassantAvailable.column = ColA;
+  boardState->enpassantAvailable.row = Row1;
+  boardState->canCastleRooks = 0 | WhiteKingSide | WhiteQueenSide |
+    BlackKingSide | BlackQueenSide;
   BoardPos pos;
   int row;
   int column;
@@ -35,5 +41,21 @@ void setupStartPos(BoardState* boardState)  {
       pos.column = column;
       boardState->squareStates[row][column] = getForStartPos(&pos);
     }
+  }
+}
+
+bool isCastlingAvailable(
+  CastlingAvailability castlingAvail, CastlingAvailOption castlingOpt)
+{
+  return (castlingAvail & castlingOpt) > 0;
+}
+
+void setCastlingAvailability(
+  CastlingAvailability* castlingAvail, CastlingAvailOption castlingOpt, bool available)
+{
+  if ( available ) {
+    *castlingAvail = (*castlingAvail) | castlingOpt;
+  } else {
+    *castlingAvail = (*castlingAvail) & (~castlingOpt);
   }
 }

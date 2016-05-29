@@ -161,6 +161,40 @@ void test_get_piece_from_fen_name(void)
 
 }
 
+void test_get_row_name(void)
+{
+	TEST_ASSERT_EQUAL_INT('1', getRowName(Row1));
+	TEST_ASSERT_EQUAL_INT('2', getRowName(Row2));
+	TEST_ASSERT_EQUAL_INT('3', getRowName(Row3));
+	TEST_ASSERT_EQUAL_INT('4', getRowName(Row4));
+
+	TEST_ASSERT_EQUAL_INT('5', getRowName(Row5));
+	TEST_ASSERT_EQUAL_INT('6', getRowName(Row6));
+	TEST_ASSERT_EQUAL_INT('7', getRowName(Row7));
+	TEST_ASSERT_EQUAL_INT('8', getRowName(Row8));
+
+	TEST_ASSERT_EQUAL_INT('X', getRowName(-274));
+	TEST_ASSERT_EQUAL_INT('X', getRowName(2475));
+
+}
+
+void test_get_column_name(void)
+{
+	TEST_ASSERT_EQUAL_INT('a', getColumnName(ColA));
+	TEST_ASSERT_EQUAL_INT('b', getColumnName(ColB));
+	TEST_ASSERT_EQUAL_INT('c', getColumnName(ColC));
+	TEST_ASSERT_EQUAL_INT('d', getColumnName(ColD));
+
+	TEST_ASSERT_EQUAL_INT('e', getColumnName(ColE));
+	TEST_ASSERT_EQUAL_INT('f', getColumnName(ColF));
+	TEST_ASSERT_EQUAL_INT('g', getColumnName(ColG));
+	TEST_ASSERT_EQUAL_INT('h', getColumnName(ColH));
+
+	TEST_ASSERT_EQUAL_INT('X', getRowName(-274));
+	TEST_ASSERT_EQUAL_INT('X', getRowName(2475));
+
+}
+
 void testBoardPiecesMatch(BoardState* boardA, BoardState* boardB)
 {
 	char debugStr[50]; 
@@ -238,7 +272,7 @@ void test_fen_round_trip(void)
 	exportFEN(&fen, &boardState);
 
 	TEST_ASSERT_EQUAL_STRING(startFen1,
-		&fen.piecePlaces);
+		&(fen.piecePlaces));
 
 	// test pos 2
 	char *startFen2 = "8/8/8/5Bp1/7k/8/4pPKP/8";
@@ -262,7 +296,7 @@ void test_fen_round_trip(void)
 	exportFEN(&fen, &boardState);
 
 	TEST_ASSERT_EQUAL_STRING(startFen2,
-		&fen.piecePlaces);
+		&(fen.piecePlaces));
 
 	// test pos 3
 	char *startFen3 = "7b/p3KBkp/7p/2p4p/3p3P/p2P4/P7/8";
@@ -286,7 +320,7 @@ void test_fen_round_trip(void)
 	exportFEN(&fen, &boardState);
 
 	TEST_ASSERT_EQUAL_STRING(startFen3,
-		&fen.piecePlaces);
+		&(fen.piecePlaces));
 
 	// test pos 4
 	char *startFen4 = 
@@ -319,6 +353,26 @@ void test_fen_round_trip(void)
 	exportFEN(&fen, &boardState);
 
 	TEST_ASSERT_EQUAL_STRING(startFen4,
-		&fen.piecePlaces);
+		&(fen.piecePlaces));
 
+}
+
+void test_export_fen_to_str_start_pos(void) 
+{
+	
+	FEN exported;
+	char exportedFenStr[FEN_WHOLE_STR_MAX_CHARS];
+
+	char *corrFen = 
+		"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
+	BoardState setupToStartPos;
+
+	setupStartPos(&setupToStartPos);
+
+	exportFEN(&exported, &setupToStartPos);
+
+	exportFenToString(&exported, exportedFenStr);
+
+	TEST_ASSERT_EQUAL_STRING(corrFen, exportedFenStr);
 }

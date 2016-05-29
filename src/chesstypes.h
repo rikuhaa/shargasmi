@@ -13,19 +13,15 @@ extern "C" {
 
 // 8 per row, 7 times '/' and '/0' to end the string
 #define FEN_POS_MAX_CHARS 72
+// there is now real upper limit, but this is a reasonable max
+// ie. the move count could need N digits but in practice it does not
+#define FEN_WHOLE_STR_MAX_CHARS 100 
 
 /*
 typedef enum {
   false,
   true
 } bool;
-*/
-
-/*
-const int COLUMNS = 8;
-const int ROWS = 8;
-
-const int MAX_MOVES_PER_GAME = 500;
 */
 
 typedef enum player {
@@ -72,11 +68,6 @@ typedef enum piece {
   BlackPawn,
   Unknown
 } Piece;
-
-typedef struct {
-  Piece squareStates[ROWS][COLUMNS];
-  Player active;
-} BoardState;
 
 typedef struct {
   Row row;
@@ -155,9 +146,50 @@ typedef struct {
 
 } ChessGame;
 
+typedef unsigned int CastlingAvailability;
+
+typedef enum castlingavailopt {
+  WhiteKingSide = 0x01,
+  WhiteQueenSide = 0x02,
+  BlackKingSide = 0x04,
+  BlackQueenSide = 0x08,
+} CastlingAvailOption;
+
+extern bool isCastlingAvailable(
+  CastlingAvailability castlingAvail, CastlingAvailOption castlingOpt);
+
+extern void setCastlingAvailability(
+  CastlingAvailability *castlingAvail, 
+  CastlingAvailOption castlingOpt, bool available);
+
+typedef struct {
+  Piece squareStates[ROWS][COLUMNS];
+  
+  Player active;
+  
+  CastlingAvailability canCastleRooks;
+  
+  BoardPos enpassantAvailable;
+  
+  int halfMoveClock;
+  
+  int fullMoveCount;
+
+} BoardState;
+
 typedef struct {
 
   char piecePlaces[FEN_POS_MAX_CHARS];
+
+  Player activePlayer;
+
+  CastlingAvailability canCastleRooks;
+
+  BoardPos enpassantAvailable;
+
+  int halfMoveClock;
+
+  int fullMoveCount;
 
 } FEN;
 

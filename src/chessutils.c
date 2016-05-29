@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "./chesstypes.h"
 #include "./chessutils.h"
 
@@ -112,8 +113,71 @@ Piece getPieceFromFENName(char name)
 
 }
 
+char getRowName(Row row) 
+{
+
+  switch(row) {
+    case Row1:
+      return '1';
+    case Row2:
+      return '2';
+    case Row3:
+      return '3';
+    case Row4:
+      return '4';
+    case Row5:
+      return '5';
+    case Row6:
+      return '6';
+    case Row7:
+      return '7';
+    case Row8:
+      return '8';
+    default:
+      // error?
+      return 'X';
+  }
+
+}
+
+char getColumnName(Column column) {
+
+  switch(column) {
+    case ColA:
+      return 'a';
+    case ColB:
+      return 'b';
+    case ColC:
+      return 'c';
+    case ColD:
+      return 'd';
+    case ColE:
+      return 'e';
+    case ColF:
+      return 'f';
+    case ColG:
+      return 'g';
+    case ColH:
+      return 'h';
+    default:
+      // error?
+      return 'X';
+  }
+
+}
+
 void importFEN(FEN* fen, BoardState* boardState) 
 {
+
+  boardState->active = fen->activePlayer;
+  boardState->canCastleRooks = fen->canCastleRooks;
+
+  boardState->halfMoveClock = fen->halfMoveClock;
+  boardState->fullMoveCount = fen->fullMoveCount;
+
+  // this is set to A1 (never legal en passant) if not available
+  boardState->enpassantAvailable.row = fen->enpassantAvailable.row;
+  boardState->enpassantAvailable.column = fen->enpassantAvailable.column;
 
   Row currRow = Row8;
   Column currCol = ColA;
@@ -163,6 +227,16 @@ void importFEN(FEN* fen, BoardState* boardState)
 
 void exportFEN(FEN* fen, BoardState* boardState) {
 
+  fen->activePlayer = boardState->active;
+  fen->canCastleRooks = boardState->canCastleRooks;
+
+  fen->halfMoveClock = boardState->halfMoveClock;
+  fen->fullMoveCount = boardState->fullMoveCount;
+
+  // this is set to A1 (never legal en passant) if not available
+  fen->enpassantAvailable.row = boardState->enpassantAvailable.row;
+  fen->enpassantAvailable.column = boardState->enpassantAvailable.column;
+
   int currEmptyCount = 0;
   int fenInd = 0;
   for ( int row = Row8; row >= Row1; row--) { 
@@ -204,40 +278,144 @@ void exportFEN(FEN* fen, BoardState* boardState) {
 
   fen->piecePlaces[fenInd] = '\0';
 
-  // Row currRow = Row8;
-  // Column currCol = ColA;
+}
+ 
+void exportFenToString(FEN* fen, char* fenString)
+{
+  // position
+  int resStrIndex = 0;
+  bool done = false;
+  int fenPosIndex = 0;
 
-  // int fenInd = 0;
+  for ( fenPosIndex = 0; fenPosIndex < FEN_POS_MAX_CHARS &&
+    !done; fenPosIndex++ ) {
 
-  // while ( fenInd < FEN_POS_MAX_CHARS && 
-  //   ! (currCol > ColH && currRow <= Row1) ) {
+    char next = fen->piecePlaces[fenPosIndex];
+    if ( next != '\0' ) {
+      fenString[resStrIndex] = next;
+      resStrIndex++;
+    } else {
+      done = true;
+    }
+  }
 
-  //   char nextFenCh = fen->piecePlaces[fenInd];
+  fenString[resStrIndex] = ' ';
+  resStrIndex++;
 
-  //   Piece toPlace = Unknown;
-  //   if ( nextFenCh == '/' ) {
-  //     currRow--;
-  //     currCol = ColA;
-  //   } else if ( '1' <= nextFenCh && nextFenCh <= '9' ) {
-  //     int numOfEmpty = nextFenCh - '0';
+  if ( fen->activePlayer == Black ) {
+    fenString[resStrIndex] = 'b';
+  } else {
+    fenString[resStrIndex] = 'w';
+  }
+  resStrIndex++;
 
-  //     toPlace = Empty;
-  //     for ( int i = 0; i < numOfEmpty - 1; i++) {
-  //       boardState->squareStates[currRow][currCol] = toPlace;
-  //       currCol++;
-  //     }
-  //     // last empty is filled with normal piece placing
-  //   } else {
-  //     toPlace = getPieceFromFENName(nextFenCh);
-  //   }
+  fenString[resStrIndex] = ' ';
+  resStrIndex++;
 
-  //   if ( toPlace != Unknown ) {
-  //     boardState->squareStates[currRow][currCol] = toPlace;
-  //     currCol++;
-  //   }
+  // castling
+  bool someCastling = false;
 
-  //   fenInd++;
-  // }
+  // castling availability order: first upper case, then lower case, 
+  // secondly first king side, then queen side
 
+  // add available castling options in correct order
+  if ( isCastlingAvailable(fen->canCastleRooks, WhiteKingSide) ) {
+    fenString[resStrIndex] = 'K';
+    resStrIndex++;
+    someCastling = true;
+  }
+  
+  if ( isCastlingAvailable(fen->canCastleRooks, WhiteQueenSide) ) {
+    fenString[resStrIndex] = 'Q';
+    resStrIndex++;
+    someCastling = true;
+  }
+
+  if ( isCastlingAvailable(fen->canCastleRooks, BlackKingSide) ) {
+    fenString[resStrIndex] = 'k';
+    resStrIndex++;
+    someCastling = true;
+  }
+  
+  if ( isCastlingAvailable(fen->canCastleRooks, BlackQueenSide) ) {
+    fenString[resStrIndex] = 'q';
+    resStrIndex++;
+    someCastling = true;
+  }
+
+  // if there were no castling options, add '-' instead
+  if ( !someCastling ) {
+    fenString[resStrIndex] = '-';
+    resStrIndex++;
+  }
+
+  fenString[resStrIndex] = ' ';
+  resStrIndex++;
+
+  // en passant
+
+  if ( fen->enpassantAvailable.row == Row1 ) {
+    // this row can never have legal en passant squeare, used as marker
+    fenString[resStrIndex] = '-';
+    resStrIndex++;
+  } else {
+    fenString[resStrIndex] = getColumnName(fen->enpassantAvailable.column);
+    resStrIndex++;
+    fenString[resStrIndex] = getRowName(fen->enpassantAvailable.row);
+    resStrIndex++;
+  }
+
+  fenString[resStrIndex] = ' ';
+  resStrIndex++;
+
+  // half move clock
+
+  char intCharBuf[6];
+  int intBufInd = 0;
+  done = false;
+
+  sprintf(intCharBuf,
+        "%i", fen->halfMoveClock);
+
+  for ( intBufInd = 0; 
+    intBufInd < 6 && !done; intBufInd++) {
+
+    char next = intCharBuf[intBufInd];
+    if ( next != '\0' ) {
+      fenString[resStrIndex] = next;
+      resStrIndex++;
+    } else {
+      done = true;
+    }
+  }
+
+  fenString[resStrIndex] = ' ';
+  resStrIndex++;
+
+  // full move count
+
+  done = false;
+
+  sprintf(intCharBuf,
+        "%i", fen->fullMoveCount);
+
+  for ( intBufInd = 0; 
+    intBufInd < 6 && !done; intBufInd++) {
+
+    char next = intCharBuf[intBufInd];
+    if ( next != '\0' ) {
+      fenString[resStrIndex] = next;
+      resStrIndex++;
+    } else {
+      done = true;
+    }
+  }
+
+  fenString[resStrIndex] = '\0';
+
+}
+
+void importFenFromString(FEN* fen, char* fenString)
+{
 
 }

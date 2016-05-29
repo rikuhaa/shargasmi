@@ -32,6 +32,10 @@ extern char getPieceFENName(Piece piece);
 
 extern Piece getPieceFromFENName(char name);
 
+extern char getRowName(Row row);
+
+extern char getColumnName(Column col);
+
 /*
 * Returns which piece currently occupies square 'boardPos'
 * in board 'boardState'
@@ -52,6 +56,10 @@ extern Piece swapPiece(Piece newPiece, BoardState* boardState, BoardPos* boardPo
 extern void importFEN(FEN* fen, BoardState* boardState);
 
 extern void exportFEN(FEN* fen, BoardState* boardState);
+
+extern void exportFenToString(FEN* fen, char* fenString);
+
+extern void importFenFromString(FEN* fen, char* fenString);
 
 extern bool belongsToPlayer(Player player, Piece piece);
 
