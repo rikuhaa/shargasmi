@@ -473,5 +473,45 @@ void test_write_move_lan_simple_moves(void)
 
 	TEST_ASSERT_EQUAL_STRING("Bg2-a8", resBuffer);
 
+}
+
+void test_write_move_lan_simple_captures(void)
+{
+	ChessMove moveToTest;
+	char resBuffer[10];
+
+	moveToTest.activePiece = WhitePawn;
+	moveToTest.passivePiece = BlackPawn;
+
+	moveToTest.startSquare.column = ColE;
+	moveToTest.startSquare.row = Row2;
+
+	moveToTest.endSquare.column = ColE;
+	moveToTest.endSquare.row = Row4;
+
+	moveToTest.type = Capture;
+
+	int writtenChars = writeMoveLan(resBuffer, &moveToTest);
+
+	resBuffer[writtenChars] = '\0';
+
+	TEST_ASSERT_EQUAL_STRING("e2xe4", resBuffer);
+
+	moveToTest.activePiece = BlackBishop;
+	moveToTest.passivePiece = WhiteQueen;
+
+	moveToTest.startSquare.column = ColG;
+	moveToTest.startSquare.row = Row2;
+
+	moveToTest.endSquare.column = ColA;
+	moveToTest.endSquare.row = Row8;
+
+	moveToTest.type = Capture;
+
+	writtenChars = writeMoveLan(resBuffer, &moveToTest);
+
+	resBuffer[writtenChars] = '\0';
+
+	TEST_ASSERT_EQUAL_STRING("Bg2xa8", resBuffer);
 
 }

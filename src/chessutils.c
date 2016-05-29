@@ -645,3 +645,22 @@ int writeMoveLan(char* writeTo, ChessMove* move)
   return writeTo - startPointer;
 
 }
+
+
+int writePgnLanMoves(char* writeTo, ChessGame* game) 
+{
+
+// TODO this could be refactored to take the 
+// the single move formatter as an argument
+// as maybe an extra info adder also (headers adder
+// and also the time-etc extended info adder...)
+
+
+// typedef struct {
+
+//   int finMovesCount;
+  
+//   ChessMove moves[MAX_MOVES_PER_GAME];
+
+// } ChessGame;
+}
