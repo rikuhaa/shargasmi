@@ -195,6 +195,34 @@ void test_get_column_name(void)
 
 }
 
+void test_get_row_from_name(void)
+{
+	TEST_ASSERT_EQUAL_INT(Row1, getRowFromName('1'));
+	TEST_ASSERT_EQUAL_INT(Row2, getRowFromName('2'));
+	TEST_ASSERT_EQUAL_INT(Row3, getRowFromName('3'));
+	TEST_ASSERT_EQUAL_INT(Row4, getRowFromName('4'));
+
+	TEST_ASSERT_EQUAL_INT(Row5, getRowFromName('5'));
+	TEST_ASSERT_EQUAL_INT(Row6, getRowFromName('6'));
+	TEST_ASSERT_EQUAL_INT(Row7, getRowFromName('7'));
+	TEST_ASSERT_EQUAL_INT(Row8, getRowFromName('8'));
+
+}
+
+void test_get_column_from_name(void)
+{
+	TEST_ASSERT_EQUAL_INT(ColA, getColumnFromName('a'));
+	TEST_ASSERT_EQUAL_INT(ColB, getColumnFromName('b'));
+	TEST_ASSERT_EQUAL_INT(ColC, getColumnFromName('c'));
+	TEST_ASSERT_EQUAL_INT(ColD, getColumnFromName('d'));
+
+	TEST_ASSERT_EQUAL_INT(ColE, getColumnFromName('e'));
+	TEST_ASSERT_EQUAL_INT(ColF, getColumnFromName('f'));
+	TEST_ASSERT_EQUAL_INT(ColG, getColumnFromName('g'));
+	TEST_ASSERT_EQUAL_INT(ColH, getColumnFromName('h'));
+
+}
+
 void testBoardPiecesMatch(BoardState* boardA, BoardState* boardB)
 {
 	char debugStr[50]; 
@@ -375,4 +403,33 @@ void test_export_fen_to_str_start_pos(void)
 	exportFenToString(&exported, exportedFenStr);
 
 	TEST_ASSERT_EQUAL_STRING(corrFen, exportedFenStr);
+}
+
+void test_import_start_pos_from_fen_str(void) 
+{
+	
+	FEN imported;
+
+	char *fenStr = 
+		"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
+	importFenFromString(&imported, fenStr);
+
+	TEST_ASSERT_EQUAL_STRING(
+		"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR", 
+		imported.piecePlaces);
+
+	TEST_ASSERT_EQUAL_INT(0, imported.halfMoveClock);
+	TEST_ASSERT_EQUAL_INT(1, imported.fullMoveCount);
+
+	TEST_ASSERT_EQUAL_INT(White, imported.activePlayer);
+
+	TEST_ASSERT_EQUAL_INT(ColA, imported.enpassantAvailable.column);
+	TEST_ASSERT_EQUAL_INT(Row1, imported.enpassantAvailable.row);
+	
+	TEST_ASSERT(isCastlingAvailable(imported.canCastleRooks, WhiteKingSide));
+	TEST_ASSERT(isCastlingAvailable(imported.canCastleRooks, WhiteQueenSide));
+	TEST_ASSERT(isCastlingAvailable(imported.canCastleRooks, BlackKingSide));
+	TEST_ASSERT(isCastlingAvailable(imported.canCastleRooks, BlackQueenSide));
+
 }

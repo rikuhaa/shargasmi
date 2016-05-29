@@ -166,6 +166,60 @@ char getColumnName(Column column) {
 
 }
 
+Row getRowFromName(char name)
+{
+
+  switch(name) {
+    case '1':
+      return Row1;
+    case '2':
+      return Row2;
+    case '3':
+      return Row3;
+    case '4':
+      return Row4;
+    case '5':
+      return Row5;
+    case '6':
+      return Row6;
+    case '7':
+      return Row7;
+    case '8':
+      return Row8;
+    default:
+      // error?
+      return Row1;
+  }
+
+}
+
+Column getColumnFromName(char name)
+{
+
+  switch(name) {
+    case 'a':
+      return ColA;
+    case 'b':
+      return ColB;
+    case 'c':
+      return ColC;
+    case 'd':
+      return ColD;
+    case 'e':
+      return ColE;
+    case 'f':
+      return ColF;
+    case 'g':
+      return ColG;
+    case 'h':
+      return ColH;
+    default:
+      // error?
+      return ColA;
+  }
+
+}
+
 void importFEN(FEN* fen, BoardState* boardState) 
 {
 
@@ -417,5 +471,118 @@ void exportFenToString(FEN* fen, char* fenString)
 
 void importFenFromString(FEN* fen, char* fenString)
 {
+  // position
+  int fenStrIndex = 0;
+  bool done = false;
+  int fenPosIndex = 0;
 
+  for ( fenPosIndex = 0; fenPosIndex < FEN_POS_MAX_CHARS &&
+    !done; fenPosIndex++ ) {
+
+    char next = fenString[fenStrIndex];
+    if ( next != ' ' ) {
+      fen->piecePlaces[fenPosIndex] = next;
+      fenStrIndex++;
+    } else {
+      done = true;
+      fen->piecePlaces[fenPosIndex] = '\0';
+    }
+  }
+
+  // error if next not ' '?
+  fenStrIndex++;
+
+  if ( fenString[fenStrIndex] == 'b') {
+    fen->activePlayer = Black;
+  } else {
+    fen->activePlayer = White;
+  }
+  fenStrIndex++;
+
+  // error if next not ' '?
+  fenStrIndex++;
+
+  setNoCastlingAvailability(&(fen->canCastleRooks));
+  
+  char next = fenString[fenStrIndex];
+  fenStrIndex++;
+
+  // '-' can be handled in same loop, just does not set any flag
+  while ( next != ' ' ) {
+    if ( next == 'K' ) {
+      setCastlingAvailability(
+        &(fen->canCastleRooks), WhiteKingSide, true);
+    } else if ( next == 'Q' ) {
+      setCastlingAvailability(
+        &(fen->canCastleRooks), WhiteQueenSide, true);
+    } else if ( next == 'k' ) {
+      setCastlingAvailability(
+        &(fen->canCastleRooks), BlackKingSide, true);
+    } else if ( next == 'q' ) {
+      setCastlingAvailability(
+        &(fen->canCastleRooks), BlackQueenSide, true);
+    }
+    next = fenString[fenStrIndex];
+    fenStrIndex++;
+  } 
+  // the ' ' already consumed in the loop
+
+  // en passant
+  if ( fenString[fenStrIndex] == '-' ) {
+    fen->enpassantAvailable.column = ColA;
+    fen->enpassantAvailable.row = Row1;
+    fenStrIndex++;
+  } else {
+    fen->enpassantAvailable.column = 
+      getColumnFromName(fenString[fenStrIndex]);
+    fenStrIndex++;
+    fen->enpassantAvailable.row =
+      getRowFromName(fenString[fenStrIndex]);
+    fenStrIndex++;
+  }
+
+  // error if not ' '?
+  fenStrIndex++;
+
+  // half move clock
+
+  int maxIntChars = 10;
+  int halfMoveClock = 0;
+  
+  char nextIntChar = fenString[fenStrIndex];
+  fenStrIndex++;
+
+  while ( nextIntChar != ' ' && maxIntChars >= 0) {
+    halfMoveClock = 10 * halfMoveClock + 
+      ((int) (nextIntChar - '0'));
+
+    nextIntChar = fenString[fenStrIndex];
+    fenStrIndex++;
+    maxIntChars--;
+  }
+
+  fen->halfMoveClock = halfMoveClock;
+  // ' ' consumed in loop
+
+  // current full move index
+
+  maxIntChars = 10;
+  int fullMoveCount = 0;
+  
+  nextIntChar = fenString[fenStrIndex];
+  fenStrIndex++;
+
+  while ( nextIntChar != ' ' 
+    && nextIntChar != '\0'
+    && maxIntChars >= 0) {
+    fullMoveCount = 10 * fullMoveCount + 
+      ((int) (nextIntChar - '0'));
+
+    nextIntChar = fenString[fenStrIndex];
+    fenStrIndex++;
+    maxIntChars--;
+  }
+
+  fen->fullMoveCount = fullMoveCount;
+  
 }

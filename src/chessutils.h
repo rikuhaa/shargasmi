@@ -36,6 +36,10 @@ extern char getRowName(Row row);
 
 extern char getColumnName(Column col);
 
+extern Row getRowFromName(char name);
+
+extern Column getColumnFromName(char name);
+
 /*
 * Returns which piece currently occupies square 'boardPos'
 * in board 'boardState'

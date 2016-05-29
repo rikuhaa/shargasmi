@@ -59,3 +59,9 @@ void setCastlingAvailability(
     *castlingAvail = (*castlingAvail) & (~castlingOpt);
   }
 }
+
+
+void setNoCastlingAvailability(CastlingAvailability *castlingAvail)
+{
+  *castlingAvail = 0;
+}

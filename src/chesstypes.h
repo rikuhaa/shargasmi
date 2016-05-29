@@ -162,6 +162,8 @@ extern void setCastlingAvailability(
   CastlingAvailability *castlingAvail, 
   CastlingAvailOption castlingOpt, bool available);
 
+extern void setNoCastlingAvailability(CastlingAvailability *castlingAvail);
+
 typedef struct {
   Piece squareStates[ROWS][COLUMNS];
   
@@ -171,9 +173,9 @@ typedef struct {
   
   BoardPos enpassantAvailable;
   
-  int halfMoveClock;
+  unsigned int halfMoveClock;
   
-  int fullMoveCount;
+  unsigned int fullMoveCount;
 
 } BoardState;
 
@@ -187,9 +189,9 @@ typedef struct {
 
   BoardPos enpassantAvailable;
 
-  int halfMoveClock;
+  unsigned int halfMoveClock;
 
-  int fullMoveCount;
+  unsigned int fullMoveCount;
 
 } FEN;
 
