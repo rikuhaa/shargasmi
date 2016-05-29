@@ -192,7 +192,6 @@ void test_simle_pawn_opening_sacrifice(void) {
 		"rnbqkbnr/ppp1pppp/8/3P4/8/8/PPPP1PPP/RNBQKBNR");
 }
 
-
 void test_put_back_to_board_sequence(void)
 {
 	moveBuf.change.square.column = ColE;
