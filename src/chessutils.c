@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include <ctype.h>
 #include "./chesstypes.h"
 #include "./chessutils.h"
@@ -713,6 +714,72 @@ int writeMoveUci(char* writeTo, ChessMove* move)
   if ( promChar != '\0' ) {
     *writeTo = promChar;
     writeTo++;
+  }
+
+  // how many characters were written
+  return writeTo - startPointer;
+
+}
+
+// optional moveCommentformatter should take arguments:
+// - char* 'write stream'
+// - ChessGame* the game structure
+// - int half move index to add comments for (0 for white first,
+//      1 for black first, 2 for white second...)
+int writePgnMoves(char* writeTo, ChessGame* game, 
+  int (*singleMoveFormatter) (char*, ChessMove*),
+  int (*moveCommentFormatter) (char*, ChessGame*, int))
+{
+
+  int currFullMove = 0;
+  char* startPointer = writeTo;
+
+  char moveNumBuffer[10];
+
+  for ( int moveIndex = 0; 
+    moveIndex < game->finMovesCount; moveIndex++ ) {
+
+    bool blackPlaying = (moveIndex % 2 != 0);
+    
+    if ( ! blackPlaying ) {
+      currFullMove++;
+      int length = 
+        sprintf(moveNumBuffer, "%i", currFullMove);
+      strncpy(writeTo, moveNumBuffer, length);
+      writeTo += length;
+      *writeTo = '.';
+      writeTo++;
+      *writeTo = ' ';
+      writeTo++;
+    }
+
+    int moveLength = (*singleMoveFormatter) 
+      (writeTo, &(game->moves[moveIndex]));
+    writeTo += moveLength;
+
+    *writeTo = ' ';
+    writeTo++;
+
+    if ( moveCommentFormatter ) {
+
+      int moveCommentLength = (*moveCommentFormatter)
+        (writeTo, game, moveIndex);
+
+      if ( moveCommentLength > 0 ) {
+
+        writeTo += moveCommentLength;
+        *writeTo = ' ';
+        writeTo++;
+
+      }
+
+    }
+
+    if ( blackPlaying ) {
+      *writeTo = '\n';
+      writeTo++;
+    }
+
   }
 
   // how many characters were written

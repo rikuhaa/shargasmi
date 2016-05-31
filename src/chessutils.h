@@ -32,7 +32,9 @@ extern int writeMoveLan(char* writeTo, ChessMove* move);
 
 extern int writeMoveUci(char* writeTo, ChessMove* move);
 
-extern int writePgnLanMoves(char* writeTo, ChessGame* game);
+extern int writePgnMoves(char* writeTo, ChessGame* game, 
+  int (*singleMoveFormatter) (char*, ChessMove*),
+  int (*moveCommentFormatter) (char*, ChessGame*, int));
 
 extern char getPieceFENName(Piece piece);
 

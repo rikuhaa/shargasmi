@@ -799,3 +799,84 @@ void test_write_move_uci_promotion(void)
 	TEST_ASSERT_EQUAL_STRING("e2e1n", resBuffer);
 
 }
+
+void test_write_pgn_lan_simple_game_start(void)
+{
+
+	ChessGame gameToTest;
+
+	int halfMoveIndex = 0;
+
+	char resBuffer[1000];
+
+	gameToTest.moves[0].activePiece = WhitePawn;
+	gameToTest.moves[0].passivePiece = Empty;
+	gameToTest.moves[0].startSquare.column = ColE;
+	gameToTest.moves[0].startSquare.row = Row2;
+	gameToTest.moves[0].endSquare.column = ColE;
+	gameToTest.moves[0].endSquare.row = Row4;
+	gameToTest.moves[0].type = Move;
+
+	gameToTest.finMovesCount = 1;
+
+	int writtenChars = writePgnMoves(resBuffer, &gameToTest,
+		writeMoveLan, NULL);
+
+	resBuffer[writtenChars] = '\0';
+
+	TEST_ASSERT_EQUAL_STRING("1. e2-e4 ", resBuffer);
+
+	gameToTest.moves[1].activePiece = BlackPawn;
+	gameToTest.moves[1].passivePiece = Empty;
+	gameToTest.moves[1].startSquare.column = ColD;
+	gameToTest.moves[1].startSquare.row = Row7;
+	gameToTest.moves[1].endSquare.column = ColD;
+	gameToTest.moves[1].endSquare.row = Row5;
+	gameToTest.moves[1].type = Move;
+
+	gameToTest.finMovesCount = 2;
+
+	writtenChars = writePgnMoves(resBuffer, &gameToTest,
+		writeMoveLan, NULL);
+
+	resBuffer[writtenChars] = '\0';
+
+	TEST_ASSERT_EQUAL_STRING("1. e2-e4 d7-d5 \n", resBuffer);
+
+	gameToTest.moves[2].activePiece = WhitePawn;
+	gameToTest.moves[2].passivePiece = BlackPawn;
+	gameToTest.moves[2].startSquare.column = ColE;
+	gameToTest.moves[2].startSquare.row = Row4;
+	gameToTest.moves[2].endSquare.column = ColD;
+	gameToTest.moves[2].endSquare.row = Row5;
+	gameToTest.moves[2].type = Capture;
+
+	gameToTest.finMovesCount = 3;
+
+	writtenChars = writePgnMoves(resBuffer, &gameToTest,
+		writeMoveLan, NULL);
+
+	resBuffer[writtenChars] = '\0';
+
+	TEST_ASSERT_EQUAL_STRING("1. e2-e4 d7-d5 \n2. e4xd5 ", resBuffer);
+
+	gameToTest.moves[3].activePiece = BlackKnight;
+	gameToTest.moves[3].passivePiece = Empty;
+	gameToTest.moves[3].startSquare.column = ColB;
+	gameToTest.moves[3].startSquare.row = Row8;
+	gameToTest.moves[3].endSquare.column = ColC;
+	gameToTest.moves[3].endSquare.row = Row6;
+	gameToTest.moves[3].type = Move;
+
+	gameToTest.finMovesCount = 4;
+
+	writtenChars = writePgnMoves(resBuffer, &gameToTest,
+		writeMoveLan, NULL);
+
+	resBuffer[writtenChars] = '\0';
+
+	TEST_ASSERT_EQUAL_STRING("1. e2-e4 d7-d5 \n2. e4xd5 Nb8-c6 \n", resBuffer);
+
+}
+
+// more pgn tests in test_integrate_chessmoves
