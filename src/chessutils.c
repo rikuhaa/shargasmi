@@ -588,11 +588,30 @@ void importFenFromString(FEN* fen, char* fenString)
   
 }
 
+// simple local helper
+// 0 == was not promotion, 1 == promotion with capture, 2 == normal promotion
+int getPromotionType(ChessMove* move)
+{
+  char promChar = getPromotionChar(move->type);
+
+  if ( promChar == '\0') {
+    return 0;
+  } else {
+    if ( move->passivePiece != Empty ) {
+      return 1;
+    } else {
+      return 2;
+    }
+  }
+
+}
 
 int writeMoveLan(char* writeTo, ChessMove* move)
 {
   char* startPointer = writeTo;
-  if ( move->type == Move || move->type == Capture ) {
+  int promotionType = getPromotionType(move);
+  if ( move->type == Move || move->type == Capture ||
+    promotionType != 0 ) {
     if ( ! (move->activePiece == WhitePawn || 
         move->activePiece == BlackPawn) ) {
       *writeTo = toupper(getPieceFENName(move->activePiece));
@@ -604,7 +623,7 @@ int writeMoveLan(char* writeTo, ChessMove* move)
     *writeTo = getRowName(move->startSquare.row);
     writeTo++;
     
-    if ( move->type == Move ) {
+    if ( move->type == Move || promotionType == 2 ) {
       *writeTo = '-';
     } else {
       *writeTo = 'x';
@@ -632,13 +651,16 @@ int writeMoveLan(char* writeTo, ChessMove* move)
     } 
     // else: could check that this is ColG, others are errors...
     // king side castling is 'O-O'
-  } else {
+  } // else: could check that promotion type not 0, which would be error
 
-    // TODO should be some kind of promotion then
-    // PromotionQueen,
-    // PromotionRook,
-    // PromotionBishop,
-    // PromotionKnight
+  // add the possible promotion characters
+  // specified for PGN usage as '=' and uppercase promoted to piece char
+  if ( promotionType != 0 ) {
+    char promotedToChar = getPromotionChar(move->type);
+    *writeTo = '=';
+    writeTo++;
+    *writeTo = toupper(promotedToChar);
+    writeTo++;
   }
 
   // who many characters were written
@@ -646,6 +668,57 @@ int writeMoveLan(char* writeTo, ChessMove* move)
 
 }
 
+
+char getPromotionChar(MoveType moveType)
+{
+  if ( moveType == PromotionQueen ) {
+    return 'q';
+  } else if ( moveType == PromotionRook ) {
+    return 'r';
+  } else if ( moveType == PromotionKnight ) {
+    return 'n';
+  } else if ( moveType == PromotionBishop ) {
+    return 'b';
+  } else {
+    return '\0';
+  }
+}
+
+// uci move is always just the coordinates 
+// of the moving piece, start coordinate, then end coordinate
+// in promotions also promoted to is shown
+int writeMoveUci(char* writeTo, ChessMove* move)
+{
+  char* startPointer = writeTo;
+
+  // start square coordinates
+  *writeTo = getColumnName(move->startSquare.column);
+  writeTo++;
+  *writeTo = getRowName(move->startSquare.row);
+  writeTo++;
+  
+  // end square coordinates
+  *writeTo = getColumnName(move->endSquare.column);
+  writeTo++;
+  *writeTo = getRowName(move->endSquare.row);
+  writeTo++;
+
+  // in castling the movement of king is recorded
+  // and that is what UCI expects
+
+  char promChar = getPromotionChar(move->type);
+
+  // if promotion, UCI expects just the promoted to
+  // piece character (lowercase) appended to the move string
+  if ( promChar != '\0' ) {
+    *writeTo = promChar;
+    writeTo++;
+  }
+
+  // how many characters were written
+  return writeTo - startPointer;
+
+}
 
 int writePgnLanMoves(char* writeTo, ChessGame* game) 
 {

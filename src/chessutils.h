@@ -30,11 +30,15 @@ extern char* getSAN(ChessMove* move);
 
 extern int writeMoveLan(char* writeTo, ChessMove* move);
 
+extern int writeMoveUci(char* writeTo, ChessMove* move);
+
 extern int writePgnLanMoves(char* writeTo, ChessGame* game);
 
 extern char getPieceFENName(Piece piece);
 
 extern Piece getPieceFromFENName(char name);
+
+extern char getPromotionChar(MoveType moveType);
 
 extern char getRowName(Row row);
 

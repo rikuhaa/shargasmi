@@ -515,3 +515,287 @@ void test_write_move_lan_simple_captures(void)
 	TEST_ASSERT_EQUAL_STRING("Bg2xa8", resBuffer);
 
 }
+
+void test_write_move_lan_castling(void)
+{
+
+	ChessMove moveToTest;
+	char resBuffer[10];
+
+	moveToTest.activePiece = WhiteKing;
+	moveToTest.passivePiece = WhiteRook;
+
+	moveToTest.startSquare.column = ColE;
+	moveToTest.startSquare.row = Row1;
+
+	moveToTest.endSquare.column = ColG;
+	moveToTest.endSquare.row = Row1;
+
+	moveToTest.type = Castling;
+
+	int writtenChars = writeMoveLan(resBuffer, &moveToTest);
+
+	resBuffer[writtenChars] = '\0';
+
+	TEST_ASSERT_EQUAL_STRING("O-O", resBuffer);
+
+	moveToTest.activePiece = BlackKing;
+	moveToTest.passivePiece = BlackRook;
+
+	moveToTest.startSquare.column = ColE;
+	moveToTest.startSquare.row = Row8;
+
+	moveToTest.endSquare.column = ColB;
+	moveToTest.endSquare.row = Row8;
+
+	moveToTest.type = Castling;
+
+	writtenChars = writeMoveLan(resBuffer, &moveToTest);
+
+	resBuffer[writtenChars] = '\0';
+
+	TEST_ASSERT_EQUAL_STRING("O-O-O", resBuffer);
+
+}
+
+void test_write_move_lan_promotion(void)
+{
+
+	ChessMove moveToTest;
+	char resBuffer[10];
+
+	moveToTest.activePiece = WhitePawn;
+	moveToTest.passivePiece = BlackRook;
+
+	moveToTest.startSquare.column = ColE;
+	moveToTest.startSquare.row = Row7;
+
+	moveToTest.endSquare.column = ColF;
+	moveToTest.endSquare.row = Row8;
+
+	moveToTest.type = PromotionQueen;
+
+	int writtenChars = writeMoveLan(resBuffer, &moveToTest);
+
+	resBuffer[writtenChars] = '\0';
+
+	TEST_ASSERT_EQUAL_STRING("e7xf8=Q", resBuffer);
+
+	moveToTest.activePiece = BlackPawn;
+	moveToTest.passivePiece = Empty;
+
+	moveToTest.startSquare.column = ColE;
+	moveToTest.startSquare.row = Row2;
+
+	moveToTest.endSquare.column = ColE;
+	moveToTest.endSquare.row = Row1;
+
+	moveToTest.type = PromotionRook;
+
+	writtenChars = writeMoveLan(resBuffer, &moveToTest);
+
+	resBuffer[writtenChars] = '\0';
+
+	TEST_ASSERT_EQUAL_STRING("e2-e1=R", resBuffer);
+
+	moveToTest.passivePiece = WhiteRook;
+	moveToTest.type = PromotionBishop;
+
+	writtenChars = writeMoveLan(resBuffer, &moveToTest);
+
+	resBuffer[writtenChars] = '\0';
+
+	TEST_ASSERT_EQUAL_STRING("e2xe1=B", resBuffer);
+
+	moveToTest.passivePiece = Empty;
+	moveToTest.type = PromotionKnight;
+
+	writtenChars = writeMoveLan(resBuffer, &moveToTest);
+
+	resBuffer[writtenChars] = '\0';
+
+	TEST_ASSERT_EQUAL_STRING("e2-e1=N", resBuffer);
+
+}
+
+void test_write_move_uci_simple_moves(void)
+{
+	ChessMove moveToTest;
+	char resBuffer[10];
+
+	moveToTest.activePiece = WhitePawn;
+
+	moveToTest.startSquare.column = ColE;
+	moveToTest.startSquare.row = Row2;
+
+	moveToTest.endSquare.column = ColE;
+	moveToTest.endSquare.row = Row4;
+
+	moveToTest.type = Move;
+
+	int writtenChars = writeMoveUci(resBuffer, &moveToTest);
+
+	resBuffer[writtenChars] = '\0';
+
+	TEST_ASSERT_EQUAL_STRING("e2e4", resBuffer);
+
+	moveToTest.activePiece = BlackBishop;
+
+	moveToTest.startSquare.column = ColG;
+	moveToTest.startSquare.row = Row2;
+
+	moveToTest.endSquare.column = ColA;
+	moveToTest.endSquare.row = Row8;
+
+	moveToTest.type = Move;
+
+	writtenChars = writeMoveUci(resBuffer, &moveToTest);
+
+	resBuffer[writtenChars] = '\0';
+
+	TEST_ASSERT_EQUAL_STRING("g2a8", resBuffer);
+
+}
+
+void test_write_move_uci_simple_captures(void)
+{
+	ChessMove moveToTest;
+	char resBuffer[10];
+
+	moveToTest.activePiece = WhitePawn;
+	moveToTest.passivePiece = BlackPawn;
+
+	moveToTest.startSquare.column = ColE;
+	moveToTest.startSquare.row = Row2;
+
+	moveToTest.endSquare.column = ColE;
+	moveToTest.endSquare.row = Row4;
+
+	moveToTest.type = Capture;
+
+	int writtenChars = writeMoveUci(resBuffer, &moveToTest);
+
+	resBuffer[writtenChars] = '\0';
+
+	TEST_ASSERT_EQUAL_STRING("e2e4", resBuffer);
+
+	moveToTest.activePiece = BlackBishop;
+	moveToTest.passivePiece = WhiteQueen;
+
+	moveToTest.startSquare.column = ColG;
+	moveToTest.startSquare.row = Row2;
+
+	moveToTest.endSquare.column = ColA;
+	moveToTest.endSquare.row = Row8;
+
+	moveToTest.type = Capture;
+
+	writtenChars = writeMoveUci(resBuffer, &moveToTest);
+
+	resBuffer[writtenChars] = '\0';
+
+	TEST_ASSERT_EQUAL_STRING("g2a8", resBuffer);
+
+}
+
+void test_write_move_uci_castling(void)
+{
+
+	ChessMove moveToTest;
+	char resBuffer[10];
+
+	moveToTest.activePiece = WhiteKing;
+	moveToTest.passivePiece = WhiteRook;
+
+	moveToTest.startSquare.column = ColE;
+	moveToTest.startSquare.row = Row1;
+
+	moveToTest.endSquare.column = ColG;
+	moveToTest.endSquare.row = Row1;
+
+	moveToTest.type = Castling;
+
+	int writtenChars = writeMoveUci(resBuffer, &moveToTest);
+
+	resBuffer[writtenChars] = '\0';
+
+	TEST_ASSERT_EQUAL_STRING("e1g1", resBuffer);
+
+	moveToTest.activePiece = BlackKing;
+	moveToTest.passivePiece = BlackRook;
+
+	moveToTest.startSquare.column = ColE;
+	moveToTest.startSquare.row = Row8;
+
+	moveToTest.endSquare.column = ColB;
+	moveToTest.endSquare.row = Row8;
+
+	moveToTest.type = Castling;
+
+	writtenChars = writeMoveUci(resBuffer, &moveToTest);
+
+	resBuffer[writtenChars] = '\0';
+
+	TEST_ASSERT_EQUAL_STRING("e8b8", resBuffer);
+
+}
+
+void test_write_move_uci_promotion(void)
+{
+
+	ChessMove moveToTest;
+	char resBuffer[10];
+
+	moveToTest.activePiece = WhitePawn;
+	moveToTest.passivePiece = BlackRook;
+
+	moveToTest.startSquare.column = ColE;
+	moveToTest.startSquare.row = Row7;
+
+	moveToTest.endSquare.column = ColF;
+	moveToTest.endSquare.row = Row8;
+
+	moveToTest.type = PromotionQueen;
+
+	int writtenChars = writeMoveUci(resBuffer, &moveToTest);
+
+	resBuffer[writtenChars] = '\0';
+
+	TEST_ASSERT_EQUAL_STRING("e7f8q", resBuffer);
+
+	moveToTest.activePiece = BlackPawn;
+	moveToTest.passivePiece = Empty;
+
+	moveToTest.startSquare.column = ColE;
+	moveToTest.startSquare.row = Row2;
+
+	moveToTest.endSquare.column = ColE;
+	moveToTest.endSquare.row = Row1;
+
+	moveToTest.type = PromotionRook;
+
+	writtenChars = writeMoveUci(resBuffer, &moveToTest);
+
+	resBuffer[writtenChars] = '\0';
+
+	TEST_ASSERT_EQUAL_STRING("e2e1r", resBuffer);
+
+	moveToTest.passivePiece = WhiteRook;
+	moveToTest.type = PromotionBishop;
+
+	writtenChars = writeMoveUci(resBuffer, &moveToTest);
+
+	resBuffer[writtenChars] = '\0';
+
+	TEST_ASSERT_EQUAL_STRING("e2e1b", resBuffer);
+
+	moveToTest.passivePiece = Empty;
+	moveToTest.type = PromotionKnight;
+
+	writtenChars = writeMoveUci(resBuffer, &moveToTest);
+
+	resBuffer[writtenChars] = '\0';
+
+	TEST_ASSERT_EQUAL_STRING("e2e1n", resBuffer);
+
+}
