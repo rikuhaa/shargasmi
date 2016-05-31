@@ -787,20 +787,67 @@ int writePgnMoves(char* writeTo, ChessGame* game,
 
 }
 
-int writePgnLanMoves(char* writeTo, ChessGame* game) 
+CastlingAvailOption checkBoardActiveCastledness(
+  BoardState* boardState) 
 {
+  BoardPos posBuf;
+  if ( boardState->active == Black ) {
+    // queen side castling square for black
+    posBuf.column = ColB;
+    posBuf.row = Row8;
 
-// TODO this could be refactored to take the 
-// the single move formatter as an argument
-// as maybe an extra info adder also (headers adder
-// and also the time-etc extended info adder...)
+    if ( getPiece(boardState, &posBuf) == BlackKing ) {
 
+      posBuf.column = ColC;
 
-// typedef struct {
+      if ( getPiece(boardState, &posBuf) == BlackRook ) {
+        return BlackQueenSide;
+      }
 
-//   int finMovesCount;
-  
-//   ChessMove moves[MAX_MOVES_PER_GAME];
+    }
 
-// } ChessGame;
+    // king side castling square for black
+    posBuf.column = ColG;
+
+    if ( getPiece(boardState, &posBuf) == BlackKing ) {
+
+      posBuf.column = ColF;
+
+      if ( getPiece(boardState, &posBuf) == BlackRook ) {
+        return BlackKingSide;
+      }
+
+    }
+
+  } else {
+    // king side castling square for black
+    posBuf.column = ColB;
+    posBuf.row = Row1;
+
+    if ( getPiece(boardState, &posBuf) == WhiteKing ) {
+
+      posBuf.column = ColC;
+
+      if ( getPiece(boardState, &posBuf) == WhiteRook ) {
+        return WhiteQueenSide;
+      }
+
+    }
+
+    // king side castling square for black
+    posBuf.column = ColG;
+
+    if ( getPiece(boardState, &posBuf) == WhiteKing ) {
+
+      posBuf.column = ColF;
+
+      if ( getPiece(boardState, &posBuf) == WhiteRook ) {
+        return WhiteKingSide;
+      }
+
+    }
+
+  }
+
+  return 0;
 }

@@ -51,6 +51,16 @@ extern Row getRowFromName(char name);
 extern Column getColumnFromName(char name);
 
 /*
+* If either queen side or king side castling has been done
+* and the situation is still on the board for the active
+* player, returns which one has been done.
+* If there is no castled pattern on board for the 
+* active player, returns 0
+*/
+extern CastlingAvailOption checkBoardActiveCastledness(
+	BoardState* boardState);
+
+/*
 * Returns which piece currently occupies square 'boardPos'
 * in board 'boardState'
 * Can be Empty

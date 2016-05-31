@@ -95,6 +95,8 @@ typedef struct {
 
   SquareChange change;
 
+  Column castlingFirstReturned;
+
 } MoveBuffer;
 
 static const Row blackHighPieceStartRow = Row8;
@@ -102,6 +104,9 @@ static const Row blackPawnStartRow = Row7;
 
 static const Row whiteHighPieceStartRow = Row1;
 static const Row whitePawnStartRow = Row2;
+
+static const Row blackPiecePromotionRow = Row1;
+static const Row whitePiecePromotionRow = Row8;
 
 static const Piece highPieceStartBlack[] = {BlackRook, BlackKnight, 
   BlackBishop, BlackQueen, BlackKing, BlackBishop, BlackKnight, BlackRook};

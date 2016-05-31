@@ -46,12 +46,8 @@ void handleMoveBoardChange(
 
     int currMoveInd = currGame->finMovesCount;
 
-    // there is only one semi-allowed situation
-    // lowering the piece back to same square
-    // ; maybe there could be a setting to 
-    // mark this as error, but as long as
-    // not trying to actually enforce rules
-    // should be good to allow this
+    // lowering the piece back to same square could be done
+    // eg. to correct the piece positioning
 
     if ( moveBuf->change.square.row == moveBuf->firstLifted.startPos.row &&
       moveBuf->change.square.column == moveBuf->firstLifted.startPos.column ) {
@@ -67,8 +63,6 @@ void handleMoveBoardChange(
 
     ChessMove *doneMove = &currGame->moves[currMoveInd];
 
-    doneMove->type = Move;
-
     doneMove->activePiece = moveBuf->firstLifted.piece;
     doneMove->passivePiece = Empty;
 
@@ -77,6 +71,19 @@ void handleMoveBoardChange(
 
     doneMove->endSquare.column = moveBuf->change.square.column;
     doneMove->endSquare.row = moveBuf->change.square.row;
+
+    // check if the move caused promotion
+
+    if ( ( doneMove->activePiece == WhitePawn && 
+      doneMove->endSquare.row == whitePiecePromotionRow ) ||
+      ( doneMove->activePiece == BlackPawn &&
+        doneMove->endSquare.row == blackPiecePromotionRow ) ) {
+      doneMove->type = PromotionQueen;
+      // other promotion types have to be switched later with some external 
+      // logic...
+    } else {
+      doneMove->type = Move;
+    }
 
     // 'commit' move
     currGame->finMovesCount++;
@@ -140,7 +147,7 @@ void handleMoveBoardChange(
       // only legal option is castling
       if ( belongsToPlayer(
           boardState->active, moveBuf->secondLifted.piece) ) {
-        type = Castling;      
+        type = Castling;
       }
     } else if ( belongsToPlayer(
         boardState->active, moveBuf->secondLifted.piece) ) {
@@ -150,7 +157,7 @@ void handleMoveBoardChange(
       // error neither piece was from the active player
     }
 
-    // record capture move (TODO castling, promotion)    
+    // record capture move (TODO castling)    
 
     int currMoveInd = currGame->finMovesCount;
 
@@ -158,29 +165,120 @@ void handleMoveBoardChange(
 
     ChessMove *doneMove = &currGame->moves[currMoveInd];
 
-    doneMove->type = Capture;
+    if ( type != Castling ) {  
 
-    doneMove->activePiece = activeLifted->piece;
-    doneMove->passivePiece = passiveLifted->piece;
+      doneMove->activePiece = activeLifted->piece;
+      doneMove->passivePiece = passiveLifted->piece;
 
-    doneMove->startSquare.column = activeLifted->startPos.column;
-    doneMove->startSquare.row = activeLifted->startPos.row;
+      doneMove->startSquare.column = activeLifted->startPos.column;
+      doneMove->startSquare.row = activeLifted->startPos.row;
 
-    doneMove->endSquare.column = moveBuf->change.square.column;
-    doneMove->endSquare.row = moveBuf->change.square.row;
+      doneMove->endSquare.column = moveBuf->change.square.column;
+      doneMove->endSquare.row = moveBuf->change.square.row;
+
+      // NOTE: en-passant has nothing special from this point of view
+      // because we are not trying to test validity here;
+      // the returning piece only returns to empty square ('en passant' square)
+      // but it still is a capture and the endsquare is marked right
+
+      // check if the move caused promotion
+
+      if ( ( doneMove->activePiece == WhitePawn && 
+        doneMove->endSquare.row == whitePiecePromotionRow ) ||
+        ( doneMove->activePiece == BlackPawn &&
+          doneMove->endSquare.row == blackPiecePromotionRow ) ) {
+        doneMove->type = PromotionQueen;
+        // other promotion types have to be switched later with some external 
+        // logic...
+      } else {
+        doneMove->type = Capture;
+      }
+    }
+
+    Piece pieceBackOnBoard = doneMove->activePiece;
+    if ( type == Castling ) {
+      if ( moveBuf->castlingFirstReturned == ColA ) {
+        // any rook or king in a valid cannot return to col-a
+        // if that was set as 'castlingFirstReturned' it means
+        // that there was no first returned piece, and this 
+        // actually is the first castling piece returning to the board
+        pieceBackOnBoard = Unknown;
+        moveBuf->castlingFirstReturned = moveBuf->change.square.column;
+      } else {
+        BoardPos posBuf;
+
+        posBuf.column = moveBuf->castlingFirstReturned;
+        if ( boardState->active == Black ) {
+          posBuf.row = Row8;
+
+          if ( posBuf.column == ColB || posBuf.column == ColG ) {
+            swapPiece(BlackKing, boardState, &posBuf);
+            pieceBackOnBoard = BlackRook;
+          } else {
+            swapPiece(BlackRook, boardState, &posBuf);
+            pieceBackOnBoard = BlackKing;
+          }
+
+          doneMove->activePiece = BlackKing;
+          doneMove->passivePiece = BlackRook;
+
+          doneMove->startSquare.column = ColE;
+          doneMove->startSquare.row = Row8;
+
+          doneMove->endSquare.row = Row8;
+          doneMove->type = Castling;
+
+          if ( posBuf.column == ColB || posBuf.column == ColC ) {
+            doneMove->endSquare.column = ColB;
+          } else {
+            doneMove->endSquare.column = ColG;
+          }
+
+        } else {
+          posBuf.row = Row1;
+
+          if ( posBuf.column == ColB || posBuf.column == ColG ) {
+            swapPiece(WhiteKing, boardState, &posBuf);
+            pieceBackOnBoard = WhiteRook;
+          } else {
+            swapPiece(WhiteRook, boardState, &posBuf);
+            pieceBackOnBoard = WhiteKing;
+          }
+
+          doneMove->activePiece = WhiteKing;
+          doneMove->passivePiece = WhiteRook;
+
+          doneMove->startSquare.column = ColE;
+          doneMove->startSquare.row = Row1;
+
+          doneMove->endSquare.row = Row1;
+          doneMove->type = Castling;
+
+          if ( posBuf.column == ColB || posBuf.column == ColC ) {
+            doneMove->endSquare.column = ColB;
+          } else {
+            doneMove->endSquare.column = ColG;
+          }
+
+        }
+      }
+    }
 
     // TODO
     // check that endsquare either matches the passive pieces
     // start square, or that the whole move matches the en passant pattern
-
-    // 'commit' move
-    currGame->finMovesCount++;
     
     Piece oldInSquare = swapPiece(
-      doneMove->activePiece, boardState, &(moveBuf->change.square));
+      pieceBackOnBoard, boardState, &(moveBuf->change.square));
 
-    // 
-    clearMoveBuffer(moveBuf);
+    // castling move becomes ready only after also the other 
+    // piece returns to the board
+    if ( type != Castling ) {
+      // 'commit' move
+      currGame->finMovesCount++;
+      // clear buffer
+      clearMoveBuffer(moveBuf);
+    }
 
     return;
   }
@@ -191,5 +289,6 @@ void handleMoveBoardChange(
 void clearMoveBuffer(MoveBuffer *moveBuf) {
   moveBuf->firstLifted.piece = Empty;
   moveBuf->secondLifted.piece = Empty;
+  moveBuf->castlingFirstReturned = ColA;
   // TODO is this enough clean up?
 }
