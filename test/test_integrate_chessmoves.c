@@ -195,7 +195,7 @@ void test_simle_pawn_opening(void) {
 
 }
 
-void test_simle_pawn_castlings(void) {
+void test_simle_castlings(void) {
 
 	char* startFen = 
 		"r3k2r/pppbqpbp/2n2np1/3pp3/3PP3/2N2NP1/PPPBQPBP/R3K2R w KQkq - 2 9";
@@ -205,19 +205,19 @@ void test_simle_pawn_castlings(void) {
 	// white long 
 	makeCastlingMove(Row1, ColE, ColA, ColC, ColD);
 
-	// black short
-	makeCastlingMove(Row8, ColE, ColH, ColG, ColF);
+	// black short, mixed col order for testing
+	makeCastlingMove(Row8, ColH, ColE, ColF, ColG);
 
 	boardEqualsFen(&board,
 		"r4rk1/pppbqpbp/2n2np1/3pp3/3PP3/2N2NP1/PPPBQPBP/2KR3R");
 
 	importFenToTest(startFen);
 
-	// white short
-	makeCastlingMove(Row1, ColE, ColH, ColG, ColF);
+	// white short, mixed col order for testing
+	makeCastlingMove(Row1, ColE, ColH, ColF, ColG);
 
-	// black long
-	makeCastlingMove(Row8, ColE, ColA, ColC, ColD);
+	// black long, mixed col order for testing
+	makeCastlingMove(Row8, ColE, ColA, ColD, ColC);
 
 	boardEqualsFen(&board,
 		"2kr3r/pppbqpbp/2n2np1/3pp3/3PP3/2N2NP1/PPPBQPBP/R4RK1");
