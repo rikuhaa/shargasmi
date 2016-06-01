@@ -6,6 +6,14 @@ void handleMoveBoardChange(
   MoveBuffer *moveBuf, BoardState *boardState, ChessGame *currGame) 
 {
 
+  Column startCol;
+  Row startRow;
+  Column endCol;
+  Row endRow;
+  MoveType doneType;
+  Piece doneActive;
+  Piece donePassive;
+
   // first piece change for the move sequence
   if ( moveBuf->firstLifted.piece == Empty ) {
     if ( moveBuf->change.nowOccupied ) {
@@ -44,8 +52,6 @@ void handleMoveBoardChange(
   if ( moveBuf->change.nowOccupied && 
       moveBuf->secondLifted.piece == Empty ) {
 
-    int currMoveInd = currGame->finMovesCount;
-
     // lowering the piece back to same square could be done
     // eg. to correct the piece positioning
 
@@ -59,43 +65,41 @@ void handleMoveBoardChange(
       return;
     }
 
-    // if max-move, error...
+    doneActive = moveBuf->firstLifted.piece;
+    donePassive = Empty;
 
-    ChessMove *doneMove = &currGame->moves[currMoveInd];
+    startCol = moveBuf->firstLifted.startPos.column;
+    startRow = moveBuf->firstLifted.startPos.row;
 
-    doneMove->activePiece = moveBuf->firstLifted.piece;
-    doneMove->passivePiece = Empty;
-
-    doneMove->startSquare.column = moveBuf->firstLifted.startPos.column;
-    doneMove->startSquare.row = moveBuf->firstLifted.startPos.row;
-
-    doneMove->endSquare.column = moveBuf->change.square.column;
-    doneMove->endSquare.row = moveBuf->change.square.row;
+    endCol = moveBuf->change.square.column;
+    endRow = moveBuf->change.square.row;
 
     // check if the move caused promotion
 
-    if ( ( doneMove->activePiece == WhitePawn && 
-      doneMove->endSquare.row == whitePiecePromotionRow ) ||
-      ( doneMove->activePiece == BlackPawn &&
-        doneMove->endSquare.row == blackPiecePromotionRow ) ) {
-      doneMove->type = PromotionQueen;
+    if ( ( doneActive == WhitePawn && 
+      endRow == whitePiecePromotionRow ) ||
+      ( doneActive == BlackPawn &&
+        endRow == blackPiecePromotionRow ) ) {
+      doneType = PromotionQueen;
       // other promotion types have to be switched later with some external 
       // logic...
     } else {
-      doneMove->type = Move;
+      doneType = Move;
     }
 
     // 'commit' move
-    currGame->finMovesCount++;
+    handleMoveFinished(currGame, boardState,
+        doneType, startCol, startRow,
+        endCol, endRow, doneActive, donePassive);
     
     Piece oldInSquare = swapPiece(
-      doneMove->activePiece, boardState, &(moveBuf->change.square));
+      doneActive, boardState, &(moveBuf->change.square));
   
     if ( oldInSquare != Empty ) {
       // error, otherwise sub-move finished
     }
 
-    if ( ! belongsToPlayer(boardState->active, doneMove->activePiece) ) {
+    if ( ! belongsToPlayer(boardState->active, doneActive) ) {
       // error, normal move can only be done with own pieces
     }
 
@@ -154,27 +158,26 @@ void handleMoveBoardChange(
       activeLifted = &moveBuf->firstLifted;
       passiveLifted = &moveBuf->secondLifted;
     } else {
-      // error neither piece was from the active player
+
+      // TODo: error?
+      activeLifted = &moveBuf->firstLifted;
+      passiveLifted = &moveBuf->secondLifted;
+
     }
 
-    // record capture move (TODO castling)    
-
-    int currMoveInd = currGame->finMovesCount;
-
-    // if max-move, error...
-
-    ChessMove *doneMove = &currGame->moves[currMoveInd];
+    // record capture move
+    // or check if castling
 
     if ( type != Castling ) {  
 
-      doneMove->activePiece = activeLifted->piece;
-      doneMove->passivePiece = passiveLifted->piece;
+      doneActive = activeLifted->piece;
+      donePassive = passiveLifted->piece;
 
-      doneMove->startSquare.column = activeLifted->startPos.column;
-      doneMove->startSquare.row = activeLifted->startPos.row;
+      startCol = activeLifted->startPos.column;
+      startRow = activeLifted->startPos.row;
 
-      doneMove->endSquare.column = moveBuf->change.square.column;
-      doneMove->endSquare.row = moveBuf->change.square.row;
+      endCol = moveBuf->change.square.column;
+      endRow = moveBuf->change.square.row;
 
       // NOTE: en-passant has nothing special from this point of view
       // because we are not trying to test validity here;
@@ -183,19 +186,19 @@ void handleMoveBoardChange(
 
       // check if the move caused promotion
 
-      if ( ( doneMove->activePiece == WhitePawn && 
-        doneMove->endSquare.row == whitePiecePromotionRow ) ||
-        ( doneMove->activePiece == BlackPawn &&
-          doneMove->endSquare.row == blackPiecePromotionRow ) ) {
-        doneMove->type = PromotionQueen;
+      if ( ( doneActive == WhitePawn && 
+        endRow == whitePiecePromotionRow ) ||
+        ( doneActive == BlackPawn &&
+          endRow == blackPiecePromotionRow ) ) {
+        doneType = PromotionQueen;
         // other promotion types have to be switched later with some external 
         // logic...
       } else {
-        doneMove->type = Capture;
+        doneType = Capture;
       }
     }
 
-    Piece pieceBackOnBoard = doneMove->activePiece;
+    Piece pieceBackOnBoard = doneActive;
     if ( type == Castling ) {
       if ( moveBuf->castlingFirstReturned == ColA ) {
         // any rook or king in a valid cannot return to col-a
@@ -211,7 +214,7 @@ void handleMoveBoardChange(
         if ( boardState->active == Black ) {
           posBuf.row = Row8;
 
-          if ( posBuf.column == ColB || posBuf.column == ColG ) {
+          if ( posBuf.column == ColC || posBuf.column == ColG ) {
             swapPiece(BlackKing, boardState, &posBuf);
             pieceBackOnBoard = BlackRook;
           } else {
@@ -219,25 +222,25 @@ void handleMoveBoardChange(
             pieceBackOnBoard = BlackKing;
           }
 
-          doneMove->activePiece = BlackKing;
-          doneMove->passivePiece = BlackRook;
+          doneActive = BlackKing;
+          donePassive = BlackRook;
 
-          doneMove->startSquare.column = ColE;
-          doneMove->startSquare.row = Row8;
+          startCol = ColE;
+          startRow = Row8;
 
-          doneMove->endSquare.row = Row8;
-          doneMove->type = Castling;
+          endRow = Row8;
+          doneType = Castling;
 
-          if ( posBuf.column == ColB || posBuf.column == ColC ) {
-            doneMove->endSquare.column = ColB;
+          if ( posBuf.column == ColC || posBuf.column == ColD ) {
+            endCol = ColC;
           } else {
-            doneMove->endSquare.column = ColG;
+            endCol = ColG;
           }
 
         } else {
           posBuf.row = Row1;
 
-          if ( posBuf.column == ColB || posBuf.column == ColG ) {
+          if ( posBuf.column == ColC || posBuf.column == ColG ) {
             swapPiece(WhiteKing, boardState, &posBuf);
             pieceBackOnBoard = WhiteRook;
           } else {
@@ -245,22 +248,35 @@ void handleMoveBoardChange(
             pieceBackOnBoard = WhiteKing;
           }
 
-          doneMove->activePiece = WhiteKing;
-          doneMove->passivePiece = WhiteRook;
+          doneActive = WhiteKing;
+          donePassive = WhiteRook;
 
-          doneMove->startSquare.column = ColE;
-          doneMove->startSquare.row = Row1;
+          startCol = ColE;
+          startRow = Row1;
 
-          doneMove->endSquare.row = Row1;
-          doneMove->type = Castling;
+          endRow = Row1;
+          doneType = Castling;
 
-          if ( posBuf.column == ColB || posBuf.column == ColC ) {
-            doneMove->endSquare.column = ColB;
+          if ( posBuf.column == ColC || posBuf.column == ColD ) {
+            endCol = ColC;
           } else {
-            doneMove->endSquare.column = ColG;
+            endCol = ColG;
           }
 
         }
+
+        swapPiece(
+          pieceBackOnBoard, boardState, &(moveBuf->change.square));
+
+        // clean up after the second part of a castling move
+        handleMoveFinished(currGame, boardState,
+          doneType, startCol, startRow,
+          endCol, endRow, doneActive, donePassive);
+
+        clearMoveBuffer(moveBuf);
+
+        return;
+
       }
     }
 
@@ -275,7 +291,11 @@ void handleMoveBoardChange(
     // piece returns to the board
     if ( type != Castling ) {
       // 'commit' move
-      currGame->finMovesCount++;
+
+      handleMoveFinished(currGame, boardState,
+        doneType, startCol, startRow,
+        endCol, endRow, doneActive, donePassive);
+
       // clear buffer
       clearMoveBuffer(moveBuf);
     }
@@ -284,6 +304,45 @@ void handleMoveBoardChange(
   }
 
   // error..?
+}
+
+void handleMoveFinished(
+  ChessGame *currGame, BoardState *boardState,
+  MoveType type, Column startCol, Row startRow, 
+  Column endCol, Row endRow,
+  Piece activePiece, Piece passivePiece)
+{
+
+  int currMoveInd = currGame->finMovesCount;
+
+  // if max-move, error...
+
+  ChessMove *doneMove = &(currGame->moves[currMoveInd]);
+
+  doneMove->activePiece = activePiece;
+  doneMove->passivePiece = passivePiece;
+
+  doneMove->startSquare.column = startCol;
+  doneMove->startSquare.row = startRow;
+
+  doneMove->endSquare.column = endCol;
+  doneMove->endSquare.row = endRow;
+
+  doneMove->type = type;
+
+  currGame->finMovesCount++;
+
+  // update active player 
+  if ( boardState->active == Black ) {
+    boardState->active = White;
+  } else {
+    boardState->active = Black;
+  }
+
+  // would not be too hard to update here also the fen settings
+  // to the board state, ie. was double pawn jump -> en passant
+  // rook / king moved -> castling availability change etc...
+
 }
 
 void clearMoveBuffer(MoveBuffer *moveBuf) {

@@ -22,6 +22,12 @@ enum MoveState {
 extern void handleMoveBoardChange(
   MoveBuffer *moveBuf, BoardState *boardState, ChessGame *currGame);
 
+extern void handleMoveFinished(
+  ChessGame *currGame, BoardState *boardState,
+  MoveType type, Column startCol, Row startRow, 
+  Column endCol, Row endRow,
+  Piece activePiece, Piece passivePiece);
+
 extern void clearMoveBuffer(MoveBuffer *moveBuf);
 
 #ifdef __cplusplus

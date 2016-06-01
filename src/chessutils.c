@@ -222,7 +222,7 @@ Column getColumnFromName(char name)
 
 }
 
-void importFEN(FEN* fen, BoardState* boardState) 
+void importFen(FEN* fen, BoardState* boardState) 
 {
 
   boardState->active = fen->activePlayer;
@@ -253,7 +253,8 @@ void importFEN(FEN* fen, BoardState* boardState)
       int numOfEmpty = nextFenCh - '0';
 
       toPlace = Empty;
-      for ( int i = 0; i < numOfEmpty - 1; i++) {
+      int i;
+      for ( i = 0; i < numOfEmpty - 1; i++) {
         boardState->squareStates[currRow][currCol] = toPlace;
         currCol++;
       }
@@ -281,7 +282,7 @@ void importFEN(FEN* fen, BoardState* boardState)
 
 }
 
-void exportFEN(FEN* fen, BoardState* boardState) {
+void exportFen(FEN* fen, BoardState* boardState) {
 
   fen->activePlayer = boardState->active;
   fen->canCastleRooks = boardState->canCastleRooks;
@@ -295,8 +296,10 @@ void exportFEN(FEN* fen, BoardState* boardState) {
 
   int currEmptyCount = 0;
   int fenInd = 0;
-  for ( int row = Row8; row >= Row1; row--) { 
-    for ( int col = ColA; col <= ColH; col++) {
+  int row;
+  int col;
+  for ( row = Row8; row >= Row1; row--) { 
+    for ( col = ColA; col <= ColH; col++) {
 
       Piece pieceInPos = getPieceRowCol(boardState, row, col);
 
@@ -643,7 +646,7 @@ int writeMoveLan(char* writeTo, ChessMove* move)
     writeTo++;
     *writeTo = 'O';
     writeTo++;
-    if ( move->endSquare.column == ColB ) {
+    if ( move->endSquare.column == ColC ) {
       // queen side castling is 'O-O-O'
       *writeTo = '-';
       writeTo++;
@@ -736,7 +739,8 @@ int writePgnMoves(char* writeTo, ChessGame* game,
 
   char moveNumBuffer[10];
 
-  for ( int moveIndex = 0; 
+  int moveIndex;
+  for ( moveIndex = 0; 
     moveIndex < game->finMovesCount; moveIndex++ ) {
 
     bool blackPlaying = (moveIndex % 2 != 0);

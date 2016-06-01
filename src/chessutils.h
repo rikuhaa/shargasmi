@@ -77,9 +77,9 @@ extern Piece getPieceRowCol(BoardState* boardState, Row row, Column column);
 */
 extern Piece swapPiece(Piece newPiece, BoardState* boardState, BoardPos* boardPos);
 
-extern void importFEN(FEN* fen, BoardState* boardState);
+extern void importFen(FEN* fen, BoardState* boardState);
 
-extern void exportFEN(FEN* fen, BoardState* boardState);
+extern void exportFen(FEN* fen, BoardState* boardState);
 
 extern void exportFenToString(FEN* fen, char* fenString);
 

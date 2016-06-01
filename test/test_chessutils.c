@@ -251,7 +251,7 @@ void test_import_fen_start_pos(void)
 
 	BoardState setupToStartPos;
 
-	importFEN(&toImport, &importFromFen);
+	importFen(&toImport, &importFromFen);
 
 	setupStartPos(&setupToStartPos);
 
@@ -270,7 +270,7 @@ void test_export_fen_start_pos(void)
 
 	setupStartPos(&setupToStartPos);
 
-	exportFEN(&exported, &setupToStartPos);
+	exportFen(&exported, &setupToStartPos);
 
 	TEST_ASSERT_EQUAL_STRING(corrFen, exported.piecePlaces);
 }
@@ -286,7 +286,7 @@ void test_fen_round_trip(void)
 	strncpy(fen.piecePlaces, startFen1,
 		FEN_POS_MAX_CHARS);
 
-	importFEN(&fen, &boardState);
+	importFen(&fen, &boardState);
 
 	TEST_ASSERT_EQUAL_INT(BlackRook, 
 		getPieceRowCol(&boardState, Row8, ColG));
@@ -297,7 +297,7 @@ void test_fen_round_trip(void)
 	TEST_ASSERT_EQUAL_INT(Empty, 
 		getPieceRowCol(&boardState, Row1, ColA));
 
-	exportFEN(&fen, &boardState);
+	exportFen(&fen, &boardState);
 
 	TEST_ASSERT_EQUAL_STRING(startFen1,
 		&(fen.piecePlaces));
@@ -308,7 +308,7 @@ void test_fen_round_trip(void)
 	strncpy(fen.piecePlaces, startFen2,
 		FEN_POS_MAX_CHARS);
 
-	importFEN(&fen, &boardState);
+	importFen(&fen, &boardState);
 
 	TEST_ASSERT_EQUAL_INT(Empty, 
 		getPieceRowCol(&boardState, Row8, ColG));
@@ -321,7 +321,7 @@ void test_fen_round_trip(void)
 	TEST_ASSERT_EQUAL_INT(Empty,
 		getPieceRowCol(&boardState, Row6, ColC));
 
-	exportFEN(&fen, &boardState);
+	exportFen(&fen, &boardState);
 
 	TEST_ASSERT_EQUAL_STRING(startFen2,
 		&(fen.piecePlaces));
@@ -332,7 +332,7 @@ void test_fen_round_trip(void)
 	strncpy(fen.piecePlaces, startFen3,
 		FEN_POS_MAX_CHARS);
 
-	importFEN(&fen, &boardState);
+	importFen(&fen, &boardState);
 
 	TEST_ASSERT_EQUAL_INT(BlackBishop, 
 		getPieceRowCol(&boardState, Row8, ColH));
@@ -345,7 +345,7 @@ void test_fen_round_trip(void)
 	TEST_ASSERT_EQUAL_INT(Empty,
 		getPieceRowCol(&boardState, Row3, ColC));
 
-	exportFEN(&fen, &boardState);
+	exportFen(&fen, &boardState);
 
 	TEST_ASSERT_EQUAL_STRING(startFen3,
 		&(fen.piecePlaces));
@@ -357,7 +357,7 @@ void test_fen_round_trip(void)
 	strncpy(fen.piecePlaces, startFen4,
 		FEN_POS_MAX_CHARS);
 
-	importFEN(&fen, &boardState);
+	importFen(&fen, &boardState);
 
 	TEST_ASSERT_EQUAL_INT(WhiteBishop, 
 		getPieceRowCol(&boardState, Row8, ColH));
@@ -378,7 +378,7 @@ void test_fen_round_trip(void)
 	TEST_ASSERT_EQUAL_INT(WhiteKnight,
 		getPieceRowCol(&boardState, Row3, ColG));
 
-	exportFEN(&fen, &boardState);
+	exportFen(&fen, &boardState);
 
 	TEST_ASSERT_EQUAL_STRING(startFen4,
 		&(fen.piecePlaces));
@@ -398,7 +398,7 @@ void test_export_fen_to_str_start_pos(void)
 
 	setupStartPos(&setupToStartPos);
 
-	exportFEN(&exported, &setupToStartPos);
+	exportFen(&exported, &setupToStartPos);
 
 	exportFenToString(&exported, exportedFenStr);
 
@@ -545,7 +545,7 @@ void test_write_move_lan_castling(void)
 	moveToTest.startSquare.column = ColE;
 	moveToTest.startSquare.row = Row8;
 
-	moveToTest.endSquare.column = ColB;
+	moveToTest.endSquare.column = ColC;
 	moveToTest.endSquare.row = Row8;
 
 	moveToTest.type = Castling;
@@ -727,7 +727,7 @@ void test_write_move_uci_castling(void)
 	moveToTest.startSquare.column = ColE;
 	moveToTest.startSquare.row = Row8;
 
-	moveToTest.endSquare.column = ColB;
+	moveToTest.endSquare.column = ColC;
 	moveToTest.endSquare.row = Row8;
 
 	moveToTest.type = Castling;
@@ -736,7 +736,7 @@ void test_write_move_uci_castling(void)
 
 	resBuffer[writtenChars] = '\0';
 
-	TEST_ASSERT_EQUAL_STRING("e8b8", resBuffer);
+	TEST_ASSERT_EQUAL_STRING("e8c8", resBuffer);
 
 }
 
