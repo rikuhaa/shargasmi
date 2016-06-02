@@ -223,6 +223,103 @@ void test_get_column_from_name(void)
 
 }
 
+
+void test_setup_empty_board(void)
+{
+	BoardState board;
+	setupEmptyBoard(&board);
+	for ( int row = 0; row < ROWS; row++ ) {
+		for ( int column = 0; column < COLUMNS; column++ ) {
+			TEST_ASSERT_EQUAL_INT(Empty, board.squareStates[row][column]);
+		}
+	}
+}
+
+void test_setup_start_pos(void)
+{
+	BoardState board;
+	BoardPos testPos;
+	setupStartPos(&board);
+	TEST_ASSERT_EQUAL_INT(White, board.active);
+	for ( int row = 0; row < ROWS; row++ ) {
+		for ( int column = 0; column < COLUMNS; column++ ) {
+			testPos.row = row;
+			testPos.column = column;
+			// getPieceForStartPos tested in another test
+			TEST_ASSERT_EQUAL_INT(getPieceForStartPos(&testPos), 
+				board.squareStates[row][column]);
+		}
+	}
+}
+
+
+void test_get_piece_for_start_pos(void)
+{
+	BoardPos forPos;
+	int testCol;
+	int testRow;
+
+	forPos.row = Row1;
+	forPos.column = ColA;
+	TEST_ASSERT_EQUAL_INT(WhiteRook, getPieceForStartPos(&forPos));
+	forPos.column = ColB;
+	TEST_ASSERT_EQUAL_INT(WhiteKnight, getPieceForStartPos(&forPos));
+	forPos.column = ColC;
+	TEST_ASSERT_EQUAL_INT(WhiteBishop, getPieceForStartPos(&forPos));
+	forPos.column = ColD;
+	TEST_ASSERT_EQUAL_INT(WhiteQueen, getPieceForStartPos(&forPos));
+	forPos.column = ColE;
+	TEST_ASSERT_EQUAL_INT(WhiteKing, getPieceForStartPos(&forPos));
+	forPos.column = ColF;
+	TEST_ASSERT_EQUAL_INT(WhiteBishop, getPieceForStartPos(&forPos));
+	forPos.column = ColG;
+	TEST_ASSERT_EQUAL_INT(WhiteKnight, getPieceForStartPos(&forPos));
+	forPos.column = ColH;
+	TEST_ASSERT_EQUAL_INT(WhiteRook, getPieceForStartPos(&forPos));
+
+	forPos.row = Row2;
+	
+	for ( testCol = 0; testCol < COLUMNS; testCol++ ) {
+		forPos.column = testCol;
+		TEST_ASSERT_EQUAL_INT(WhitePawn, getPieceForStartPos(&forPos));
+	}
+
+	for ( testRow = Row3; testRow <= Row6; testRow++ ) {
+		forPos.row = testRow;
+		for ( testCol = 0; testCol < COLUMNS; testCol++ ) {
+			forPos.column = testCol;
+			TEST_ASSERT_EQUAL_INT(Empty, getPieceForStartPos(&forPos));
+		}
+	}
+
+	forPos.row = Row7;
+	
+	for ( testCol = 0; testCol < COLUMNS; testCol++ ) {
+		forPos.column = testCol;
+		TEST_ASSERT_EQUAL_INT(BlackPawn, getPieceForStartPos(&forPos));
+	}
+
+
+	forPos.row = Row8;
+	forPos.column = ColA;
+	TEST_ASSERT_EQUAL_INT(BlackRook, getPieceForStartPos(&forPos));
+	forPos.column = ColB;
+	TEST_ASSERT_EQUAL_INT(BlackKnight, getPieceForStartPos(&forPos));
+	forPos.column = ColC;
+	TEST_ASSERT_EQUAL_INT(BlackBishop, getPieceForStartPos(&forPos));
+	forPos.column = ColD;
+	TEST_ASSERT_EQUAL_INT(BlackQueen, getPieceForStartPos(&forPos));
+	forPos.column = ColE;
+	TEST_ASSERT_EQUAL_INT(BlackKing, getPieceForStartPos(&forPos));
+	forPos.column = ColF;
+	TEST_ASSERT_EQUAL_INT(BlackBishop, getPieceForStartPos(&forPos));
+	forPos.column = ColG;
+	TEST_ASSERT_EQUAL_INT(BlackKnight, getPieceForStartPos(&forPos));
+	forPos.column = ColH;
+	TEST_ASSERT_EQUAL_INT(BlackRook, getPieceForStartPos(&forPos));
+
+}
+
 void testBoardPiecesMatch(BoardState* boardA, BoardState* boardB)
 {
 	char debugStr[50]; 

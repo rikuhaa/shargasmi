@@ -108,6 +108,9 @@ static const Row whitePawnStartRow = Row2;
 static const Row blackPiecePromotionRow = Row1;
 static const Row whitePiecePromotionRow = Row8;
 
+static const Row whiteEnpassantRow = Row4;
+static const Row blackEnpassantRow = Row5;
+
 static const Piece highPieceStartBlack[] = {BlackRook, BlackKnight, 
   BlackBishop, BlackQueen, BlackKing, BlackBishop, BlackKnight, BlackRook};
 
@@ -199,18 +202,6 @@ typedef struct {
   unsigned int fullMoveCount;
 
 } FEN;
-
-extern void setupEmptyBoard(BoardState* boardState);
-
-extern void setupStartPos(BoardState* boardState);
-
-/*
-* Takes a position on the board (row, colum) and returns
-* which piece is on that square when the board is setup 
-* correctly.
-* Can return Empty
-*/
-extern Piece getForStartPos(BoardPos* pos);
 
 #ifdef __cplusplus
 }

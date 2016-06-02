@@ -40,6 +40,18 @@ extern char getPieceFENName(Piece piece);
 
 extern Piece getPieceFromFENName(char name);
 
+/*
+* Takes a position on the board (row, colum) and returns
+* which piece is on that square when the board is setup 
+* correctly.
+* Can return Empty
+*/
+extern Piece getPieceForStartPos(BoardPos *boardPos);
+
+extern void setupEmptyBoard(BoardState* boardState);
+
+extern void setupStartPos(BoardState* boardState);
+
 extern char getPromotionChar(MoveType moveType);
 
 extern char getRowName(Row row);
