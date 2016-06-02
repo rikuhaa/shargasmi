@@ -74,6 +74,8 @@ typedef struct {
   Column column;
 } BoardPos;
 
+extern bool isSameSquare(BoardPos *posA, BoardPos *posB);
+
 typedef struct {
 
   Piece piece;

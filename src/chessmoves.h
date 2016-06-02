@@ -7,17 +7,8 @@
 extern "C" {
 #endif
 
-/*
-enum MoveState {
-
-  INIT,
-  ONE_MOVING,
-  CAPTURING,
-  CASTLING,
-  
-
-}
-*/
+extern void handleSetupBoardChange(
+	MoveBuffer *moveBuf, BoardState *boardState);
 
 extern void handleMoveBoardChange(
   MoveBuffer *moveBuf, BoardState *boardState, ChessGame *currGame);

@@ -351,3 +351,215 @@ void clearMoveBuffer(MoveBuffer *moveBuf) {
   moveBuf->castlingFirstReturned = ColA;
   // TODO is this enough clean up?
 }
+
+/*
+* Mode for setting up a board mainly to send a FEN and then
+* analyze it. Can also be used as a starting point to a normal
+* game.
+*
+* The main logic of setup mode is as follows:
+*   1. MoveBuffer is periodically cleaned (outside this function)
+*      to allow easily removing pieces from the board
+*   2. When MoveBuffer is empty, and a SquareChange happens that
+*      marks a square occupied, the Piece is marked to be the one
+*      with that square as the starting square
+*   3. Square becomes occupied -> there is one Piece in move buffer
+*      -> that piece is moved to the new square
+*   4. Square becomes empty, already one moving, assume that 
+*      the moving piece will be placed on the empty square
+*         -> if next change does not make the 'captured'
+*          square occupied, swap the 'captured' piece as moving
+*          and assume the first moving piece was taken off the 
+*          board
+*      - this logic is chained for successive empty events
+*      without any square becoming occupied
+*  TODO: this rule is maybe confusing, and just removing 
+*  piece and using the clear interval before reintroducing
+*  would work almost as good
+*   5. At any moment, a Piece can be "converted" by moving 
+*      it to the start square of given piece type, and then
+*      lifting and lowering it there again (before lift, lower
+*      keeps old type also in that square)
+*
+*
+*/
+void handleSetupBoardChange(
+  MoveBuffer *moveBuf, BoardState *boardState) 
+{
+
+  // first piece change for the move sequence
+  if ( moveBuf->firstLifted.piece == Empty ) {
+    
+    // this is the case when a piece is introduced to the board
+    if ( moveBuf->change.nowOccupied ) {
+      
+      Piece cameToBoard = getPieceForStartPos(&(moveBuf->change.square));
+
+      // TODO error if cameToBoard == empty (non start pos)
+
+      swapPiece(cameToBoard, boardState, &(moveBuf->change.square));
+
+      // also could check that the square was empty, though if non-empty
+      // square would have marked to become occupied, that would be a 
+      // chessrunner user error
+
+      // the move was handled completely, clear buffer
+      clearMoveBuffer(moveBuf);
+
+    } else {
+
+      Piece lifted = swapPiece(Empty, boardState, &(moveBuf->change.square));
+      
+      if ( lifted == Empty ) {
+        // this is also an error situation, mainly telling
+        // that the boardState was wrong...
+      }
+
+      // for setup purposes, the starting positions does not really
+      // matter that much actually, but let's record it anyway
+      // might be important in 'capture' or 'off-board' decisions
+      moveBuf->firstLifted.piece = lifted;
+      moveBuf->firstLifted.startPos.row = 
+        moveBuf->change.square.row;
+      moveBuf->firstLifted.startPos.column = 
+        moveBuf->change.square.column;
+    }
+
+    return;
+  }
+
+  if ( moveBuf->firstLifted.piece != Empty 
+    && moveBuf->secondLifted.piece == Empty ) {
+    
+    if ( moveBuf->change.nowOccupied ) {
+      
+      // this is the case maybe bit dubious 'case 5' for quickly 
+      // changing piece type
+      if ( isSameSquare(&(moveBuf->firstLifted.startPos), 
+        &(moveBuf->change.square)) ) {
+
+        Piece startPosPiece = getPieceForStartPos(&(moveBuf->change.square));
+        if ( startPosPiece != Empty ) {
+
+          swapPiece(startPosPiece, boardState, &(moveBuf->change.square));
+
+          clearMoveBuffer(moveBuf);
+
+          return;
+
+        } else {
+          // just clean the buffer, otherwise ignore
+          clearMoveBuffer(moveBuf);
+          return;        
+        }
+
+
+      } 
+      // this is the case for normal move with existing piece from square to square
+      else {
+
+        // TODO also here could check that the square really was empty
+        // for debug purposes
+
+        swapPiece(moveBuf->firstLifted.piece, 
+          boardState, &(moveBuf->change.square));
+
+        clearMoveBuffer(moveBuf);
+
+        return;
+
+      }
+
+    } 
+    // starting a move that might but a piece on a square of another piece 
+    // or just move the first piece out off the board
+    else {
+
+      Piece lifted = swapPiece(Empty, boardState, &(moveBuf->change.square));
+      
+      if ( lifted == Empty ) {
+        // this is also an error situation, mainly telling
+        // that the boardState was wrong...
+      }
+
+      // for setup purposes, the starting positions does not really
+      // matter that much actually, but let's record it anyway
+      // might be important in 'capture' or 'off-board' decisions
+      moveBuf->secondLifted.piece = lifted;
+      moveBuf->secondLifted.startPos.row = 
+        moveBuf->change.square.row;
+      moveBuf->secondLifted.startPos.column = 
+        moveBuf->change.square.column;
+    }
+
+    return;
+  }
+
+  // cases were either 'capturing' pieces (ie. moving a piece to an 
+  // already occupied piece)
+  // or when moving some of the pieces off the board
+  if ( moveBuf->firstLifted.piece != Empty 
+    && moveBuf->secondLifted.piece != Empty ) {
+
+    // third (or more) piece lifted, move 
+    // the old pieces backwards, and discard the first lifted
+    if ( ! moveBuf->change.nowOccupied ) {
+
+      // move 'secondLifted' to be 'firstLifted' and discard the
+      // old 'firstLifted'
+      moveBuf->firstLifted.piece = moveBuf->secondLifted.piece;
+      moveBuf->firstLifted.startPos.row = 
+        moveBuf->secondLifted.startPos.row;
+      moveBuf->firstLifted.startPos.column =
+        moveBuf->secondLifted.startPos.column;
+
+      // mark the newly lifted piece as the new 'firstLifted'
+
+      Piece lifted = swapPiece(Empty, boardState, &(moveBuf->change.square));
+      
+      if ( lifted == Empty ) {
+        // this is also an error situation, mainly telling
+        // that the boardState was wrong...
+      }
+
+      // for setup purposes, the starting positions does not really
+      // matter that much actually, but let's record it anyway
+      // might be important in 'capture' or 'off-board' decisions
+      moveBuf->secondLifted.piece = lifted;
+      moveBuf->secondLifted.startPos.row = 
+        moveBuf->change.square.row;
+      moveBuf->secondLifted.startPos.column = 
+        moveBuf->change.square.column;
+
+      return;
+
+    }
+    // either the second-lifted square become occupied -> "setup capture"
+    // or some other square become occupied -> second lifted moved there,
+    //    the first lifted was moved out of the board
+    else {
+      // "setup capture"
+      if ( isSameSquare(&(moveBuf->secondLifted.startPos), 
+        &(moveBuf->change.square)) ) {
+
+        swapPiece(moveBuf->firstLifted.piece, 
+          boardState, &(moveBuf->change.square));
+      
+        // TODO: could check that the square was empty
+
+      }
+      // "discard first, move second"
+      else {
+
+        swapPiece(moveBuf->secondLifted.piece, 
+          boardState, &(moveBuf->change.square));
+
+      }
+
+      clearMoveBuffer(moveBuf);
+      return;
+    }
+
+  }
+
+}

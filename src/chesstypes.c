@@ -16,6 +16,10 @@ void setCastlingAvailability(
   }
 }
 
+bool isSameSquare(BoardPos *posA, BoardPos *posB)
+{
+	return (posA->column == posB->column) && (posA->row == posB->row);
+}
 
 void setNoCastlingAvailability(CastlingAvailability *castlingAvail)
 {
