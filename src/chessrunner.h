@@ -18,19 +18,42 @@ typedef enum chessmode {
 } ChessMode;
 
 typedef enum chessaction {
-	PGN,
-	FEN,
+	PrintPgn,
+	PrintFen,
 	Reset
 } ChessAction;
 
+typedef enum chesserrtype {
+	UnknownMove
+} ChessErrorType;
+
+typedef struct chessstate {
+
+	ChessGame game;
+	BoardState board;
+
+	MoveBuffer moveBuf;
+
+	ChessMode currMode;
+
+	void (*commandPrinter) (char*);
+
+	void (*errorHandler) (ChessErrorType, char*);
+
+	int (*moveCommentFormatter) (char*, ChessGame*, int);
+
+	long (*timeStamper) (void);
+
+} ChessState;
+
 extern void setMode(
-  ChessMode mode);
+	ChessState *state, ChessMode mode);
 
 extern void doAction(
-	ChessAction action);
+	ChessState *state, ChessAction action);
 
 extern void handleSquareChange(
-	SquareChange *change);
+	ChessState *state, SquareChange *change);
 
 
 #ifdef __cplusplus
