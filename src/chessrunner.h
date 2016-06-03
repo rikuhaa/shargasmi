@@ -20,7 +20,8 @@ typedef enum chessmode {
 typedef enum chessaction {
 	PrintPgn,
 	PrintFen,
-	Reset
+	Reset,
+	Start
 } ChessAction;
 
 typedef enum chesserrtype {
@@ -30,11 +31,14 @@ typedef enum chesserrtype {
 typedef struct chessstate {
 
 	ChessGame game;
+	
 	BoardState board;
 
 	MoveBuffer moveBuf;
 
 	ChessMode currMode;
+
+	bool (*isOccupied)(Row row, Column column);
 
 	void (*outputPrinter) (char*);
 
@@ -49,6 +53,9 @@ typedef struct chessstate {
 	int tempStrBufferLen;
 
 } ChessState;
+
+extern void initEmptyChessState(
+	ChessState *state, char* tempStrBuffer, int tempStrBufferLen);
 
 extern void setMode(
 	ChessState *state, ChessMode mode);
