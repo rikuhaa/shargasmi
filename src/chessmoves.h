@@ -7,10 +7,10 @@
 extern "C" {
 #endif
 
-extern void handleSetupBoardChange(
+extern bool handleSetupBoardChange(
 	MoveBuffer *moveBuf, BoardState *boardState);
 
-extern void handleMoveBoardChange(
+extern bool handleMoveBoardChange(
   MoveBuffer *moveBuf, BoardState *boardState, ChessGame *currGame);
 
 extern void handleMoveFinished(

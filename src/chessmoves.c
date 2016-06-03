@@ -2,7 +2,7 @@
 #include "./chessutils.h"
 #include "./chessmoves.h"
 
-void handleMoveBoardChange(
+bool handleMoveBoardChange(
   MoveBuffer *moveBuf, BoardState *boardState, ChessGame *currGame) 
 {
 
@@ -35,7 +35,7 @@ void handleMoveBoardChange(
     moveBuf->firstLifted.startPos.column = 
       moveBuf->change.square.column;
 
-    return;
+    return false;
   }
 
   // TODO en-passant, and castling moves can be done by first
@@ -62,7 +62,7 @@ void handleMoveBoardChange(
 
       clearMoveBuffer(moveBuf);
 
-      return;
+      return false;
     }
 
     doneActive = moveBuf->firstLifted.piece;
@@ -105,7 +105,7 @@ void handleMoveBoardChange(
 
     clearMoveBuffer(moveBuf);
     
-    return;
+    return true;
   }
 
   if ( !moveBuf->change.nowOccupied &&
@@ -124,7 +124,7 @@ void handleMoveBoardChange(
     moveBuf->secondLifted.startPos.column = 
       moveBuf->change.square.column;
 
-    return;
+    return false;
 
   } else {
     // error, only two pieces can be moving at the same time 
@@ -275,7 +275,7 @@ void handleMoveBoardChange(
 
         clearMoveBuffer(moveBuf);
 
-        return;
+        return true;
 
       }
     }
@@ -300,7 +300,7 @@ void handleMoveBoardChange(
       clearMoveBuffer(moveBuf);
     }
 
-    return;
+    return true;
   }
 
   // error..?
@@ -383,7 +383,7 @@ void clearMoveBuffer(MoveBuffer *moveBuf) {
 *
 *
 */
-void handleSetupBoardChange(
+bool handleSetupBoardChange(
   MoveBuffer *moveBuf, BoardState *boardState) 
 {
 
@@ -406,6 +406,8 @@ void handleSetupBoardChange(
       // the move was handled completely, clear buffer
       clearMoveBuffer(moveBuf);
 
+      return true;
+
     } else {
 
       Piece lifted = swapPiece(Empty, boardState, &(moveBuf->change.square));
@@ -425,7 +427,7 @@ void handleSetupBoardChange(
         moveBuf->change.square.column;
     }
 
-    return;
+    return false;
   }
 
   if ( moveBuf->firstLifted.piece != Empty 
@@ -445,12 +447,12 @@ void handleSetupBoardChange(
 
           clearMoveBuffer(moveBuf);
 
-          return;
+          return true;
 
         } else {
           // just clean the buffer, otherwise ignore
           clearMoveBuffer(moveBuf);
-          return;        
+          return false;
         }
 
 
@@ -466,7 +468,7 @@ void handleSetupBoardChange(
 
         clearMoveBuffer(moveBuf);
 
-        return;
+        return true;
 
       }
 
@@ -490,9 +492,10 @@ void handleSetupBoardChange(
         moveBuf->change.square.row;
       moveBuf->secondLifted.startPos.column = 
         moveBuf->change.square.column;
+    
+      return false;
     }
 
-    return;
   }
 
   // cases were either 'capturing' pieces (ie. moving a piece to an 
@@ -531,7 +534,7 @@ void handleSetupBoardChange(
       moveBuf->secondLifted.startPos.column = 
         moveBuf->change.square.column;
 
-      return;
+      return false;
 
     }
     // either the second-lifted square become occupied -> "setup capture"
@@ -557,7 +560,7 @@ void handleSetupBoardChange(
       }
 
       clearMoveBuffer(moveBuf);
-      return;
+      return true;
     }
 
   }

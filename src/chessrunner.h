@@ -36,13 +36,17 @@ typedef struct chessstate {
 
 	ChessMode currMode;
 
-	void (*commandPrinter) (char*);
+	void (*outputPrinter) (char*);
 
 	void (*errorHandler) (ChessErrorType, char*);
 
 	int (*moveCommentFormatter) (char*, ChessGame*, int);
 
 	long (*timeStamper) (void);
+
+	char* tempStrBuffer;
+
+	int tempStrBufferLen;
 
 } ChessState;
 
