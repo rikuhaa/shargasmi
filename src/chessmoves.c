@@ -343,6 +343,18 @@ void handleMoveFinished(
   // to the board state, ie. was double pawn jump -> en passant
   // rook / king moved -> castling availability change etc...
 
+  // as long as not caring about move validity, don't have 
+  // to test for eg. that this was a 'Move'
+  updateEnpassantTarget(doneMove->activePiece, 
+    &(doneMove->startSquare), &(doneMove->endSquare),
+    &(boardState->enpassantAvailable));
+
+  // update castling availabitily
+  // in all finished moves both squares can be checked
+  // (in setup moves this is might not always be the case)
+  updateCastlingAfterPieceMoved(&(doneMove->startSquare),
+    &(doneMove->endSquare), false, &(boardState->canCastleRooks));
+
 }
 
 void clearMoveBuffer(MoveBuffer *moveBuf) {

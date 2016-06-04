@@ -17,11 +17,22 @@ typedef enum chessmode {
   Play
 } ChessMode;
 
+typedef enum chessrunnerstate {
+	AfterReset,
+	Running,
+	Paused
+} ChessRunnerState;
+
 typedef enum chessaction {
 	PrintPgn,
 	PrintFen,
-	Reset,
-	Start
+	// reset clears state
+	// and next play begins from clear state
+	ResetAction,
+	PlayAction,
+	// pause does not clear state
+	// next play begins from non-cleared state
+	PauseAction
 } ChessAction;
 
 typedef enum chesserrtype {
@@ -37,6 +48,8 @@ typedef struct chessstate {
 	MoveBuffer moveBuf;
 
 	ChessMode currMode;
+
+	ChessRunnerState currState;
 
 	bool (*isOccupied)(Row row, Column column);
 
@@ -57,7 +70,7 @@ typedef struct chessstate {
 extern void initEmptyChessState(
 	ChessState *state, char* tempStrBuffer, int tempStrBufferLen);
 
-extern void setMode(
+extern void setRunnerMode(
 	ChessState *state, ChessMode mode);
 
 extern void doAction(

@@ -14,6 +14,7 @@ bool testSquares(ChessState*, bool (*condition)(ChessState*, Row, Column));
 
 bool startGameOccChecker(ChessState*, Row, Column);
 bool checkNoneOccupied(ChessState*, Row, Column);
+bool checkNonEmptySquaresOccupied(ChessState*, Row, Column);
 
 void handleStartAction(ChessState*);
 
@@ -53,6 +54,7 @@ void initEmptyChessState(
 
 	clearMoveBuffer(&(state->moveBuf));
 	state->currMode = Play;
+	state->currState = AfterReset;
 
 	state->isOccupied = NULL;
 	state->outputPrinter = NULL;
@@ -67,7 +69,7 @@ void initEmptyChessState(
 	state->tempStrBufferLen = tempStrBufferLen;
 }
 
-void setMode(
+void setRunnerMode(
   ChessState *state,
   ChessMode mode) 
 {
@@ -91,29 +93,67 @@ void doAction(
 			printFen(state);
 			break;
 
-		case Start:
+		case PlayAction:
 			handleStartAction(state);
 			break;
 
 	}
 }
 
+void handleResetAction(ChessState *state) 
+{
+	state->currState = AfterReset;
+	// TODO if playing:
+	// - reset clock?
+	// - move the pgn to old 
+	// games buffer
+	// - 
+
+	// most of this can though also be 
+	// done just before continuing the game
+
+	state->game.finMovesCount = 0;
+	clearMoveBuffer(&(state->moveBuf));
+}
+
+void handlePauseAction(ChessState *state) 
+{
+	// pause the clock somehow
+	// or maybe implement most of the clock
+	// functionality by move start times
+	// to begin with
+	state->currState = Paused;
+}
+
 void handleStartAction(ChessState *state)
 {
 	
-	if ( state->currMode == Play ) {
-	
-		setupStartPos(&(state->board));
+	if ( state->currState == AfterReset ) {
+		if ( state->currMode == Play ) {
+		
+			setupStartPos(&(state->board));
 
-		testSquares(state, &startGameOccChecker);
+			// reset clock to zero too, and 
+			// then begin from that when 
+			// changing to Running again 
+			// (when continuing from Paused 
+			// the clock is also started
+			// but not reset)
 
+		} else if ( state->currMode == Setup ) {
 
-	} else if ( state->currMode == Setup ) {
+			setupEmptyBoard(&(state->board));
 
-		setupEmptyBoard(&(state->board));
+		}
+	}
 
-		testSquares(state, &checkNoneOccupied);
+	bool ok = testSquares(state, &checkNonEmptySquaresOccupied);
 
+	if ( ok ) {
+		state->currState = Running;
+	} else {
+		// TODO signal error somehow
+		// could just use the error handler
 	}
 
 	// this should check that 
@@ -142,6 +182,19 @@ bool testSquares(ChessState* state, bool (*condition)(ChessState*, Row, Column))
 	}
 
 	return wasOk;
+}
+
+bool checkNonEmptySquaresOccupied(ChessState* state, Row row, Column col)
+{
+
+	bool occupied = (*(state->isOccupied))(row, col);
+	Piece inSquare = getPieceRowCol(&(state->board), row, col);
+	// TODO could only check that piece is not unknown
+	if ( inSquare == Empty ) {
+		return ! occupied;
+	} else {
+		return occupied;
+	}
 }
 
 bool startGameOccChecker(ChessState* state, Row row, Column col)
@@ -198,15 +251,31 @@ void handleSquareChange(
 	ChessState *state,
 	SquareChange *change)
 {
-	state->moveBuf.change.square.column = change->square.column;
-	state->moveBuf.change.square.row = change->square.row;
-	state->moveBuf.change.nowOccupied = change->nowOccupied;
 
-	if ( state->currMode == Play ) {
-		handleMoveBoardChange(
-			&(state->moveBuf), &(state->board), &(state->game));
-	} else if ( state->currMode == Setup ) {
-		handleSetupBoardChange(
-			&(state->moveBuf), &(state->board));
+	if ( state->currState == Running ) {
+
+		state->moveBuf.change.square.column = change->square.column;
+		state->moveBuf.change.square.row = change->square.row;
+		state->moveBuf.change.nowOccupied = change->nowOccupied;
+
+		if ( state->currMode == Play ) {
+			bool fullMoveReady = handleMoveBoardChange(
+				&(state->moveBuf), &(state->board), &(state->game));
+			if ( fullMoveReady ) {
+				// TODO: if not promotion..?
+				int writtenChars = 
+					writeMoveUci(state->tempStrBuffer, 
+						&(state->game.moves[state->game.finMovesCount - 1]));
+				state->tempStrBuffer[writtenChars] = '\0';
+				bufferToOut(state);
+
+			}
+		} else if ( state->currMode == Setup ) {
+			handleSetupBoardChange(
+				&(state->moveBuf), &(state->board));
+			// should here also the fen be printed
+			// on all ready full moves?
+		}
+
 	}
 }

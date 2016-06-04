@@ -36,6 +36,79 @@ bool belongsToPlayer(Player player, Piece piece)
   }
 }
 
+bool updateEnpassantTarget(Piece piece, BoardPos *startPos,
+  BoardPos *endPos, BoardPos *updateEnpassantTarget)
+{
+  bool isEnpassantTarget = false;
+  if ( piece == WhitePawn && startPos->row == whitePawnStartRow &&
+      endPos->row == whiteEnpassantRow ) {
+    isEnpassantTarget = true;
+  } else if ( piece == BlackPawn && startPos->row == blackPawnStartRow &&
+      endPos->row == blackEnpassantRow ) {
+    isEnpassantTarget = true;
+  } 
+  if ( isEnpassantTarget ) {
+    if ( piece == WhitePawn ) {
+      updateEnpassantTarget->row = Row3;
+    } else {
+      updateEnpassantTarget->row = Row6;
+    }
+    updateEnpassantTarget->column = endPos->column;
+  } else {
+    updateEnpassantTarget->row = Row1;
+    updateEnpassantTarget->column = ColA;
+  }
+  return isEnpassantTarget;
+}
+
+// helper function for updateCasltingAfterPieceMoved
+void updateCastlingAfterSquareChange(
+  BoardPos *changed, CastlingAvailability *toUpdate)
+{
+  if ( changed->row == whiteHighPieceStartRow ) {
+    if ( changed->column == ColE ) { // king moved or has moved
+      setCastlingAvailability(toUpdate, WhiteKingSide, false);
+      setCastlingAvailability(toUpdate, WhiteQueenSide, false);
+    } else if ( changed->column == ColA ) { // queen side rook
+      setCastlingAvailability(toUpdate, WhiteQueenSide, false);
+    } else if ( changed->column == ColH ) { // king side rook
+      setCastlingAvailability(toUpdate, WhiteKingSide, false);
+    }
+  } else if ( changed->row == blackHighPieceStartRow ) {
+    if ( changed->column == ColE ) { // king moved or has moved
+      setCastlingAvailability(toUpdate, BlackKingSide, false);
+      setCastlingAvailability(toUpdate, BlackQueenSide, false);
+    } else if ( changed->column == ColA ) { // queen side rook
+      setCastlingAvailability(toUpdate, BlackQueenSide, false);
+    } else if ( changed->column == ColH ) { // king side rook
+      setCastlingAvailability(toUpdate, BlackKingSide, false);
+    }
+  }
+}
+
+void updateCastlingAfterPieceMoved(
+  BoardPos *movedFrom, 
+  BoardPos *movedTo,
+  bool ignoreMovedTo,
+  CastlingAvailability *toUpdate)
+{
+  // it is enough to test start square of the move
+  // and the end square of the move (for eg. capture)
+  // -> if the piece moving from eg. queen side 
+  // rook start square is not a rook, the rook 
+  // has already moved or become taken, and 
+  // then the castling is not available anyway
+  updateCastlingAfterSquareChange(movedFrom, toUpdate);
+
+  if ( ! ignoreMovedTo ) {
+    updateCastlingAfterSquareChange(movedTo, toUpdate);
+  }
+
+  // any other moves don't directly affect availability
+  // also the canonical castling notation will 
+  // get both castling moves disabled because the king moves
+}
+
 /*
 *
 */
@@ -61,6 +134,13 @@ Piece getPieceForStartPos(BoardPos *pos)
 }
 
 void setupEmptyBoard(BoardState* boardState) {
+  boardState->active = White;
+  boardState->halfMoveClock = 0;
+  boardState->fullMoveCount = 1;
+  boardState->enpassantAvailable.column = ColA;
+  boardState->enpassantAvailable.row = Row1;
+  boardState->canCastleRooks = 0 | WhiteKingSide | WhiteQueenSide |
+    BlackKingSide | BlackQueenSide;
   int row;
   int column;
   for ( row = 0; row < ROWS; row++ ) {

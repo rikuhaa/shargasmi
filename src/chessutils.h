@@ -23,6 +23,15 @@ extern bool isInPromotePos(Piece piece);
 */
 extern bool isInStartPos(Piece piece);
 
+extern bool updateEnpassantTarget(
+	Piece piece, BoardPos *startPas, 
+	BoardPos *endPos, BoardPos *enpassantSquare);
+
+extern void updateCastlingAfterPieceMoved(
+	BoardPos *movedFrom,  BoardPos *movedTo,
+  	bool ignoreMovedTo,
+  	CastlingAvailability *toUpdate);
+
 /*
 *
 */
