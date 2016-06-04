@@ -109,6 +109,17 @@ void updateCastlingAfterPieceMoved(
   // get both castling moves disabled because the king moves
 }
 
+bool resetsHalfMoveClock(ChessMove *move)
+{
+  if ( move->activePiece == WhitePawn || move->activePiece == BlackPawn ) {
+    return true;
+  } else if ( move->type == Capture ) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 /*
 *
 */

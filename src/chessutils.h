@@ -32,6 +32,9 @@ extern void updateCastlingAfterPieceMoved(
   	bool ignoreMovedTo,
   	CastlingAvailability *toUpdate);
 
+
+extern bool resetsHalfMoveClock(ChessMove *move);
+
 /*
 *
 */

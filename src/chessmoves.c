@@ -207,6 +207,11 @@ bool handleMoveBoardChange(
         // actually is the first castling piece returning to the board
         pieceBackOnBoard = Unknown;
         moveBuf->castlingFirstReturned = moveBuf->change.square.column;
+
+        // move did not become finished, waiting for 
+        // the second castling piece to come back to the board
+        return false;
+
       } else {
         BoardPos posBuf;
 
@@ -332,9 +337,10 @@ void handleMoveFinished(
 
   currGame->finMovesCount++;
 
-  // update active player 
+  // update active player and full move number if needed
   if ( boardState->active == Black ) {
     boardState->active = White;
+    boardState->fullMoveCount++;
   } else {
     boardState->active = Black;
   }
@@ -354,6 +360,12 @@ void handleMoveFinished(
   // (in setup moves this is might not always be the case)
   updateCastlingAfterPieceMoved(&(doneMove->startSquare),
     &(doneMove->endSquare), false, &(boardState->canCastleRooks));
+
+  if ( resetsHalfMoveClock(doneMove) ) {
+    boardState->halfMoveClock = 0;
+  } else {
+    boardState->halfMoveClock++;
+  }
 
 }
 
