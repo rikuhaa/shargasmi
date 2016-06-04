@@ -120,6 +120,24 @@ bool resetsHalfMoveClock(ChessMove *move)
   }
 }
 
+ChessMove* getLatestFinMove(ChessGame *game)
+{
+  // could maybe check if finMovesCount is 0
+  ChessMove *latestMove = &(game->moves[game->finMovesCount - 1]);
+  return latestMove;
+}
+
+
+bool latestMoveIsPromotion(ChessGame *game)
+{
+  if ( game->finMovesCount == 0 ) {
+    return false;
+  }
+  MoveType latestType = getLatestFinMove(game)->type;
+  return latestType == PromotionQueen || latestType == PromotionKnight ||
+    latestType == PromotionRook || latestType == PromotionBishop;
+}
+
 /*
 *
 */

@@ -155,8 +155,8 @@ bool handleMoveBoardChange(
       }
     } else if ( belongsToPlayer(
         boardState->active, moveBuf->secondLifted.piece) ) {
-      activeLifted = &moveBuf->firstLifted;
-      passiveLifted = &moveBuf->secondLifted;
+      activeLifted = &moveBuf->secondLifted;
+      passiveLifted = &moveBuf->firstLifted;
     } else {
 
       // TODo: error?
@@ -369,11 +369,18 @@ void handleMoveFinished(
 
 }
 
-void clearMoveBuffer(MoveBuffer *moveBuf) {
+void clearMoveBuffer(MoveBuffer *moveBuf) 
+{
   moveBuf->firstLifted.piece = Empty;
   moveBuf->secondLifted.piece = Empty;
   moveBuf->castlingFirstReturned = ColA;
   // TODO is this enough clean up?
+}
+
+bool isMoveBufferEmpty(MoveBuffer *moveBuf) 
+{
+  return moveBuf->firstLifted.piece == Empty &&
+    moveBuf->secondLifted.piece == Empty;
 }
 
 /*

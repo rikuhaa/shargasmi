@@ -21,6 +21,8 @@ extern void handleMoveFinished(
 
 extern void clearMoveBuffer(MoveBuffer *moveBuf);
 
+extern bool isMoveBufferEmpty(MoveBuffer *moveBuf);
+
 #ifdef __cplusplus
 }
 #endif

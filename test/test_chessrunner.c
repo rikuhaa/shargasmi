@@ -256,9 +256,10 @@ void test_morphy_duke_carl_game(void)
 	makeSquareChange(Row5, ColB, true);
 
 	// w10
-
-	makeSquareChange(Row3, ColC, false);
+	// take to-be-captured piece out of board first,
+	// should be okay in this way too
 	makeSquareChange(Row5, ColB, false);
+	makeSquareChange(Row3, ColC, false);
 	makeSquareChange(Row5, ColB, true);
 
 	// second checkpoint, after white's tenth
@@ -298,8 +299,10 @@ void test_morphy_duke_carl_game(void)
 	makeSquareChange(Row7, ColD, true);
 
 	// b13
-	makeSquareChange(Row8, ColD, false);
+	// take to-be-captured piece out of board first,
+	// should be okay in this way too
 	makeSquareChange(Row7, ColD, false);
+	makeSquareChange(Row8, ColD, false);
 	makeSquareChange(Row7, ColD, true);
 
 	// w14
@@ -319,8 +322,10 @@ void test_morphy_duke_carl_game(void)
 		expStrs, 12 + 11 + 11);
 
 	// w15
-	makeSquareChange(Row5, ColB, false);
+	// take to-be-captured piece out of board first,
+	// should be okay in this way too
 	makeSquareChange(Row7, ColD, false);
+	makeSquareChange(Row5, ColB, false);
 	makeSquareChange(Row7, ColD, true);
 
 	// b15
@@ -333,8 +338,10 @@ void test_morphy_duke_carl_game(void)
 	makeSquareChange(Row8, ColB, true);
 
 	// b16
-	makeSquareChange(Row7, ColD, false);
+	// take to-be-captured piece out of board first,
+	// should be okay in this way too
 	makeSquareChange(Row8, ColB, false);
+	makeSquareChange(Row7, ColD, false);
 	makeSquareChange(Row8, ColB, true);
 
 	// w17

@@ -70,7 +70,7 @@ void test_belongs_to_player(void)
 	TEST_ASSERT(belongsToPlayer(White, WhiteKnight));
 	TEST_ASSERT(belongsToPlayer(White, WhiteQueen));
 	TEST_ASSERT(belongsToPlayer(White, WhiteKing));
-	
+	bool latestMoveIsPromotion(ChessGame *game);
 	TEST_ASSERT(!belongsToPlayer(White, BlackPawn));
 	TEST_ASSERT(!belongsToPlayer(White, BlackRook));
 	TEST_ASSERT(!belongsToPlayer(White, BlackBishop));
@@ -977,3 +977,7 @@ void test_write_pgn_lan_simple_game_start(void)
 }
 
 // more pgn tests in test_integrate_chessmoves
+
+// TODO test the methods for updating fen metadata
+
+// test the method for knowing if latest move was promotion

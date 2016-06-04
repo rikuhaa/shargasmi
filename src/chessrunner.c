@@ -17,6 +17,7 @@ bool checkNoneOccupied(ChessState*, Row, Column);
 bool checkNonEmptySquaresOccupied(ChessState*, Row, Column);
 
 void handleStartAction(ChessState*);
+void tryRollPromotion(ChessState*);
 
 /*
 typedef struct chessstate {
@@ -97,7 +98,35 @@ void doAction(
 			handleStartAction(state);
 			break;
 
+		case RollPromotionAction:
+			tryRollPromotion(state);
+			break;
 	}
+}
+
+void tryRollPromotion(ChessState *state)
+{
+	// promotion type can be rolled only
+	// just after promotion move finished
+	// and before any other move
+	// has been started (empty buffer)
+
+	if ( state->moveBuf.firstLifted.piece == Empty &&
+		state->moveBuf.secondLifted.piece == Empty &&
+		latestMoveIsPromotion(&(state->game)) ) {
+		ChessMove *latestMove = getLatestFinMove(&(state->game));
+		
+		if ( latestMove->type == PromotionQueen ) {
+			latestMove->type = PromotionKnight;
+		} else if ( latestMove->type == PromotionKnight ) {
+			latestMove->type = PromotionRook; 
+		} else if ( latestMove->type == PromotionRook ) {
+			latestMove->type = PromotionBishop;
+		} else {
+			latestMove->type = PromotionQueen;
+		}
+	}
+
 }
 
 void handleResetAction(ChessState *state) 
@@ -247,12 +276,30 @@ void bufferToOut(ChessState *state)
 	(*state->outputPrinter)(state->tempStrBuffer);
 }
 
+void printLatestMoveUci(ChessState *state)
+{
+	int writtenChars = 
+		writeMoveUci(state->tempStrBuffer, 
+			getLatestFinMove(&(state->game)));
+	state->tempStrBuffer[writtenChars] = '\0';
+	bufferToOut(state);
+}
+
 void handleSquareChange(
 	ChessState *state,
 	SquareChange *change)
 {
 
 	if ( state->currState == Running ) {
+
+		if ( state->currMode == Play &&
+			isMoveBufferEmpty(&(state->moveBuf)) &&
+			latestMoveIsPromotion(&(state->game)) ) {
+			// promotion can be sent only now
+			// because the promoted to type can be changed
+			// after the move on board is finished
+			printLatestMoveUci(state);
+		}
 
 		state->moveBuf.change.square.column = change->square.column;
 		state->moveBuf.change.square.row = change->square.row;
@@ -261,14 +308,9 @@ void handleSquareChange(
 		if ( state->currMode == Play ) {
 			bool fullMoveReady = handleMoveBoardChange(
 				&(state->moveBuf), &(state->board), &(state->game));
-			if ( fullMoveReady ) {
-				// TODO: if not promotion..?
-				int writtenChars = 
-					writeMoveUci(state->tempStrBuffer, 
-						&(state->game.moves[state->game.finMovesCount - 1]));
-				state->tempStrBuffer[writtenChars] = '\0';
-				bufferToOut(state);
-
+			if ( fullMoveReady && 
+				! latestMoveIsPromotion(&(state->game)) ) {
+				printLatestMoveUci(state);
 			}
 		} else if ( state->currMode == Setup ) {
 			handleSetupBoardChange(

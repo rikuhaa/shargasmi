@@ -35,6 +35,10 @@ extern void updateCastlingAfterPieceMoved(
 
 extern bool resetsHalfMoveClock(ChessMove *move);
 
+extern bool latestMoveIsPromotion(ChessGame *game);
+
+extern ChessMove *getLatestFinMove(ChessGame *game);
+
 /*
 *
 */

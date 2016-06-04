@@ -312,6 +312,9 @@ void test_simple_move_sequence(void)
 void test_simple_capture_sequence(void) 
 {
 
+	// start this test from black capturing white pawn
+	board.active = Black;
+
 	board.squareStates[Row6][ColD] = WhitePawn;
 
 	moveBuf.change.square.column = ColE;

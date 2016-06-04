@@ -32,7 +32,11 @@ typedef enum chessaction {
 	PlayAction,
 	// pause does not clear state
 	// next play begins from non-cleared state
-	PauseAction
+	PauseAction,
+	// this could maybe be named more generic
+	// and handled like this only under very specific 
+	// conditions...
+	RollPromotionAction
 } ChessAction;
 
 typedef enum chesserrtype {
