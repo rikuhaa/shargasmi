@@ -360,3 +360,52 @@ void test_morphy_duke_carl_game(void)
 
 
 }
+
+void test_setup_mode(void)
+{
+	char *expStrs[] = {
+		"4k3/8/8/8/8/8/4P3/4K3 w KQkq - 0 1",
+		"4k3/6P1/8/8/4r3/5K2/8/8 w KQkq - 0 1"
+	};
+
+	setRunnerMode(&state, Setup);
+
+	doAction(&state, PlayAction);
+
+	// should be empty board ready to be set-up with pieces
+
+	// bring in the kings
+	makeSquareChange(Row8, ColE, true);
+	makeSquareChange(Row1, ColE, true);
+
+	// one pawn to white
+	makeSquareChange(Row2, ColE, true);
+
+	doAction(&state, PrintFen);
+
+	testOutputReceivedMatches(
+		expStrs, 1);
+
+	// bring in some more black pieces and then make white 
+	// pawn ready to be promoted
+
+	// black rook
+	makeSquareChange(Row8, ColH, true);
+	// move rook to other square
+	makeSquareChange(Row8, ColH, false);
+	makeSquareChange(Row4, ColE, true);
+
+	// move white king
+	makeSquareChange(Row1, ColE, false);
+	makeSquareChange(Row3, ColF, true);
+
+	// move white pawn to potential promote square
+	makeSquareChange(Row2, ColE, false);
+	makeSquareChange(Row7, ColG, true);
+	
+	doAction(&state, PrintFen);
+
+	testOutputReceivedMatches(
+		expStrs, 2);
+
+}
