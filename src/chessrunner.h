@@ -25,6 +25,7 @@ typedef enum chessrunnerstate {
 
 typedef enum chessaction {
 	PrintPgn,
+	PrintPgnLong,
 	PrintFen,
 	// reset clears state
 	// and next play begins from clear state
@@ -42,6 +43,19 @@ typedef enum chessaction {
 typedef enum chesserrtype {
 	UnknownMove
 } ChessErrorType;
+
+typedef struct chessstate ChessState;
+
+typedef struct timehandler {
+
+	unsigned long long (*getRunningMillis) (void);
+
+	unsigned long long (*getElapsedClockMillis) (Player);
+
+	void (*scheduleTask) ( void (*task) (ChessState*),
+		long delayMillis);
+
+} ChessTimeHandler;
 
 typedef struct chessstate {
 
@@ -61,10 +75,8 @@ typedef struct chessstate {
 
 	void (*errorHandler) (ChessErrorType, char*);
 
-	int (*moveCommentFormatter) (char*, ChessGame*, int);
-
-	long (*timeStamper) (void);
-
+	ChessTimeHandler* timeHandler;
+	
 	char* tempStrBuffer;
 
 	int tempStrBufferLen;

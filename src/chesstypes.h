@@ -146,6 +146,9 @@ typedef struct {
 
   MoveType type;
 
+  unsigned long long playerElapsedClockTime;
+  unsigned long long runningGameTime;
+
 } ChessMove;
 
 typedef struct {

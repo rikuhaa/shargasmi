@@ -33,6 +33,9 @@ extern int writePgnMoves(char* writeTo, ChessGame* game,
   int (*singleMoveFormatter) (char*, ChessMove*),
   int (*moveCommentFormatter) (char*, ChessGame*, int));
 
+extern int writeTimeStampInfo(char* writeTo,
+	ChessGame *game, int halfMoveIndex);
+
 extern char getPieceFENName(Piece piece);
 
 extern Piece getPieceFromFENName(char name);

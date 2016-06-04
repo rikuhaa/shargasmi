@@ -6,6 +6,7 @@
 #include <stddef.h>
 
 // helper functions
+void printPgnLong(ChessState*);
 void printPgn(ChessState*);
 void printFen(ChessState*);
 void bufferToOut(ChessState*);
@@ -21,33 +22,6 @@ void tryRollPromotion(ChessState*);
 
 void testFlushPendingPromotionMove(ChessState *state);
 
-/*
-typedef struct chessstate {
-
-	ChessGame game;
-	BoardState board;
-
-	MoveBuffer moveBuf;
-
-	ChessMode currMode;
-
-	bool
-	
-	void (*outputPrinter) (char*);
-
-	void (*errorHandler) (ChessErrorType, char*);
-
-	int (*moveCommentFormatter) (char*, ChessGame*, int);
-
-	long (*timeStamper) (void);
-
-	char* tempStrBuffer;
-
-	int tempStrBufferLen;
-
-} ChessState;
-*/
-
 void initEmptyChessState(
 	ChessState *state, char *tempStrBuffer, int tempStrBufferLen) 
 {
@@ -62,8 +36,7 @@ void initEmptyChessState(
 	state->isOccupied = NULL;
 	state->outputPrinter = NULL;
 	state->errorHandler = NULL;
-	state->moveCommentFormatter = NULL;
-	state->timeStamper = NULL;
+	state->timeHandler = NULL;
 
 	// TODO check that tempStrBufferLen is 
 	// at least relatively sane
@@ -96,6 +69,10 @@ void doAction(
 	}
 
 	switch ( action ) {
+
+		case PrintPgnLong:
+			printPgnLong(state);
+			break;
 
 		case PrintPgn:
 			printPgn(state);
@@ -268,11 +245,25 @@ void printFen(ChessState *state)
 	bufferToOut(state);
 }
 
+void printPgnLong(ChessState *state)
+{
+	int lenWritten = writePgnMoves(state->tempStrBuffer, &(state->game), 
+  		writeMoveLan,
+  		writeTimeStampInfo);
+	if ( lenWritten >= state->tempStrBufferLen ) {
+		// oops... should the methods take max?
+		// for now let's go with that it is enough 
+		// that we trust the buffer to be large enough...
+	}
+	state->tempStrBuffer[lenWritten] = '\0';
+	bufferToOut(state);
+}
+
 void printPgn(ChessState *state)
 {
 	int lenWritten = writePgnMoves(state->tempStrBuffer, &(state->game), 
   		writeMoveLan,
-  		state->moveCommentFormatter);
+  		NULL);
 	if ( lenWritten >= state->tempStrBufferLen ) {
 		// oops... should the methods take max?
 		// for now let's go with that it is enough 
@@ -313,6 +304,23 @@ void handleSquareChange(
 			bool fullMoveReady = handleMoveBoardChange(
 				&(state->moveBuf), &(state->board), &(state->game));
 			if ( fullMoveReady ) {
+				// update the move timestamps (if available)
+				// already here in any case
+				ChessMove *latestMove = 
+						getLatestFinMove(&(state->game));
+				if ( state->timeHandler != NULL ) {
+					Player currPlayer = White;
+					if ( state->board.active == White ) {
+						currPlayer = Black; // already updated for next
+					}
+					latestMove->playerElapsedClockTime =
+						(*(state->timeHandler->getElapsedClockMillis))(currPlayer);
+  					latestMove->runningGameTime = 
+  						(*(state->timeHandler->getRunningMillis))();
+				} else {
+					latestMove->playerElapsedClockTime = 0;
+					latestMove->runningGameTime = 0;
+				}
 				if ( ! latestMoveIsPromotion(&(state->game)) ) {
 					printLatestMoveUci(state);
 				} else {

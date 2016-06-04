@@ -14,8 +14,12 @@ static int currStrInd;
 
 static char tempBuff[10000];
 
-static long currTimeStamp;
+static unsigned long currTimeStamp;
 
+static unsigned long whiteGameClock;
+static unsigned long blackGameClock;
+
+static ChessTimeHandler timeHandler;
 
 void makeSquareChange(Row row, Column col, bool nowOccupied) 
 {
@@ -41,7 +45,18 @@ void testOutputReceivedMatches(char** expStrs, int count)
 
 }
 
-long timeStamper()
+unsigned long long playerClockTimeStamper(Player forPlayer)
+{
+	if ( forPlayer == White ) {
+		whiteGameClock += 1000;
+		return whiteGameClock;
+	} else {
+		blackGameClock += 1000;
+		return blackGameClock;
+	}
+}
+
+unsigned long long timeStamper()
 {
 	currTimeStamp += 1000;
 	return currTimeStamp;
@@ -65,8 +80,14 @@ void setUp(void)
 	initEmptyChessState(&state, tempBuff, 10000);
 	currStrInd = 0;
 	currTimeStamp = 0;
+	blackGameClock = 0;
+	whiteGameClock = 0;
+	timeHandler.getElapsedClockMillis = 
+		&playerClockTimeStamper;
+	timeHandler.getRunningMillis =
+		&timeStamper;
 	state.outputPrinter = &outputPrinter;
-	state.timeStamper = &timeStamper;
+	state.timeHandler = &timeHandler;
 	state.isOccupied = &isOccupied;
 }
 
@@ -94,6 +115,52 @@ void test_simple_game(void)
 		expStrs, 3);
 
 }
+
+
+void test_simple_game_with_time(void)
+{
+	char *expStrs[] = {
+		"e2e4", 
+		"1. e2-e4 {[game: 1000] [move: 1000] [own: 1000]} ",
+		"e7e5",
+		"1. e2-e4 {[game: 1000] [move: 1000] [own: 1000]} "
+		"e7-e5 {[game: 2000] [move: 1000] [own: 1000]} \n",
+		"b1c3",
+		"1. e2-e4 {[game: 1000] [move: 1000] [own: 1000]} "
+		"e7-e5 {[game: 2000] [move: 1000] [own: 1000]} \n"
+		"2. Nb1-c3 {[game: 3000] [move: 1000] [own: 2000]} "
+	};
+
+	setRunnerMode(&state, Play);
+
+	doAction(&state, PlayAction);
+
+	makeSquareChange(Row2, ColE, false);
+	makeSquareChange(Row4, ColE, true);
+
+	doAction(&state, PrintPgnLong);
+
+	testOutputReceivedMatches(
+		expStrs, 2);
+
+	makeSquareChange(Row7, ColE, false);
+	makeSquareChange(Row5, ColE, true);
+
+	doAction(&state, PrintPgnLong);
+
+	testOutputReceivedMatches(
+		expStrs, 4);
+
+	makeSquareChange(Row1, ColB, false);
+	makeSquareChange(Row3, ColC, true);
+
+	doAction(&state, PrintPgnLong);
+
+	testOutputReceivedMatches(
+		expStrs, 6);
+
+}
+
 
 void test_morphy_duke_carl_game(void)
 {

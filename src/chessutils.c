@@ -910,6 +910,35 @@ int writeMoveUci(char* writeTo, ChessMove* move)
 
 }
 
+int writeTimeStampInfo(char* writeTo,
+  ChessGame *game, int halfMoveIndex)
+{
+
+  char *startPointer = writeTo;
+
+  char timeinfoBuffer[200];
+
+  ChessMove move = game->moves[halfMoveIndex];
+
+  long moveStartTimeStamp = 0;
+  if ( halfMoveIndex != 0 ) {
+    moveStartTimeStamp = 
+      game->moves[halfMoveIndex - 1].runningGameTime;
+  }
+
+  int written = 
+    sprintf(timeinfoBuffer,
+      "{[game: %Lu] [move: %Lu] [own: %Lu]}", 
+      move.runningGameTime, 
+      move.runningGameTime - moveStartTimeStamp,
+      move.playerElapsedClockTime);
+
+  strncpy(writeTo, timeinfoBuffer, written);
+
+  return written;
+
+}
+
 // optional moveCommentformatter should take arguments:
 // - char* 'write stream'
 // - ChessGame* the game structure
