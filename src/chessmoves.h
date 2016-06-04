@@ -7,6 +7,11 @@
 extern "C" {
 #endif
 
+// this can be called to tell that the pieces currently 
+// on the move should be considered discarded off the board
+extern void handleSetupMoveTimeout(
+  MoveBuffer *moveBuf, BoardState *boardState);
+
 extern bool handleSetupBoardChange(
 	MoveBuffer *moveBuf, BoardState *boardState);
 
@@ -22,6 +27,12 @@ extern void handleMoveFinished(
 extern void clearMoveBuffer(MoveBuffer *moveBuf);
 
 extern bool isMoveBufferEmpty(MoveBuffer *moveBuf);
+
+extern bool isPendingPromotionMarkSet(MoveBuffer *moveBuf);
+
+extern void clearPendingPromotionMark(MoveBuffer *moveBuf);
+
+extern void setPendingPromotionMark(MoveBuffer *moveBuf);
 
 #ifdef __cplusplus
 }

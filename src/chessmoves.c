@@ -2,6 +2,16 @@
 #include "./chessutils.h"
 #include "./chessmoves.h"
 
+#include <stddef.h>
+
+// internal helper method
+// change type here: 0 from board to board,
+// 1 new piece, 2 removed from board
+void updateFenMetadataSetupMode(
+  Piece affectedPiece, BoardPos *startSquare,
+  BoardPos *endSquare, int changeType, 
+  BoardState *boardState);
+
 bool handleMoveBoardChange(
   MoveBuffer *moveBuf, BoardState *boardState, ChessGame *currGame) 
 {
@@ -383,6 +393,25 @@ bool isMoveBufferEmpty(MoveBuffer *moveBuf)
     moveBuf->secondLifted.piece == Empty;
 }
 
+bool isPendingPromotionMarkSet(MoveBuffer *moveBuf)
+{
+  // this can be quite safely used to mark this
+  // no valid promotion can use this as a mark
+  // and also pending promotion cannot live 
+  // longer than clearing the buffer 
+  return moveBuf->castlingFirstReturned == ColB;
+}
+
+void clearPendingPromotionMark(MoveBuffer *moveBuf)
+{
+  moveBuf->castlingFirstReturned = ColA;
+}
+
+void setPendingPromotionMark(MoveBuffer *moveBuf)
+{
+  moveBuf->castlingFirstReturned = ColB;
+}
+
 /*
 * Mode for setting up a board mainly to send a FEN and then
 * analyze it. Can also be used as a starting point to a normal
@@ -412,6 +441,19 @@ bool isMoveBufferEmpty(MoveBuffer *moveBuf)
 *      lifting and lowering it there again (before lift, lower
 *      keeps old type also in that square)
 *
+* Rules for updating FEN metadata:
+*   1. active player
+*       - when king comes to board (or "converted" back to king)
+*       the side matching the king's color is marked as active
+*   2. castling availability
+*       - when king or rook comes to play, castling is made 
+*       available in any ways that seem possible at that point
+*       - at any other time, moving king or rook will remove
+*       matching castling options
+*   3. en passant target square
+*       - moving a pawn from its start position two squares 
+*       forward updates en passant target
+*       - any other move clears the en passant target square
 *
 */
 bool handleSetupBoardChange(
@@ -433,6 +475,9 @@ bool handleSetupBoardChange(
       // also could check that the square was empty, though if non-empty
       // square would have marked to become occupied, that would be a 
       // chessrunner user error
+
+      updateFenMetadataSetupMode(cameToBoard, NULL,
+        &(moveBuf->change.square), 1, boardState); 
 
       // the move was handled completely, clear buffer
       clearMoveBuffer(moveBuf);
@@ -476,6 +521,9 @@ bool handleSetupBoardChange(
 
           swapPiece(startPosPiece, boardState, &(moveBuf->change.square));
 
+          updateFenMetadataSetupMode(startPosPiece, NULL,
+            &(moveBuf->change.square), 1, boardState); 
+
           clearMoveBuffer(moveBuf);
 
           return true;
@@ -496,6 +544,11 @@ bool handleSetupBoardChange(
 
         swapPiece(moveBuf->firstLifted.piece, 
           boardState, &(moveBuf->change.square));
+
+
+        updateFenMetadataSetupMode(moveBuf->firstLifted.piece, 
+          &(moveBuf->firstLifted.startPos),
+          &(moveBuf->change.square), 0, boardState); 
 
         clearMoveBuffer(moveBuf);
 
@@ -539,6 +592,12 @@ bool handleSetupBoardChange(
     // the old pieces backwards, and discard the first lifted
     if ( ! moveBuf->change.nowOccupied ) {
 
+      // metadata might be updated also in the case of 
+      // discarding a piece out of the game
+      updateFenMetadataSetupMode(moveBuf->firstLifted.piece, 
+        &(moveBuf->firstLifted.startPos),
+        NULL, 2, boardState); 
+
       // move 'secondLifted' to be 'firstLifted' and discard the
       // old 'firstLifted'
       moveBuf->firstLifted.piece = moveBuf->secondLifted.piece;
@@ -581,6 +640,10 @@ bool handleSetupBoardChange(
       
         // TODO: could check that the square was empty
 
+        updateFenMetadataSetupMode(moveBuf->firstLifted.piece, 
+          &(moveBuf->firstLifted.startPos),
+          &(moveBuf->change.square), 0, boardState); 
+
       }
       // "discard first, move second"
       else {
@@ -588,12 +651,99 @@ bool handleSetupBoardChange(
         swapPiece(moveBuf->secondLifted.piece, 
           boardState, &(moveBuf->change.square));
 
+        updateFenMetadataSetupMode(moveBuf->secondLifted.piece, 
+          &(moveBuf->secondLifted.startPos),
+          &(moveBuf->change.square), 0, boardState); 
+
       }
 
       clearMoveBuffer(moveBuf);
       return true;
     }
 
+  }
+
+}
+
+void handleSetupMoveTimeout(
+  MoveBuffer *moveBuf, BoardState *boardState)
+{
+  if ( moveBuf->firstLifted.piece != Empty ) {
+    updateFenMetadataSetupMode(moveBuf->firstLifted.piece, 
+      &(moveBuf->firstLifted.startPos),
+      NULL, 2, boardState);
+  }
+  if ( moveBuf->secondLifted.piece != Empty ) {
+    updateFenMetadataSetupMode(moveBuf->secondLifted.piece, 
+      &(moveBuf->secondLifted.startPos),
+      NULL, 2, boardState); 
+  }
+  clearMoveBuffer(moveBuf);
+}
+
+// change type here: 0 from board to board,
+// 1 new piece, 2 removed from board
+void updateFenMetadataSetupMode(
+  Piece affectedPiece, BoardPos *startSquare,
+  BoardPos *endSquare, int changeType, 
+  BoardState *boardState) 
+{
+  if ( changeType == 1 ) {
+    CastlingAvailability *castlingAvail = 
+      &(boardState->canCastleRooks);
+    // when a new piece is introduced, it must 
+    // be in its starting position
+    if ( affectedPiece == WhiteKing ) {
+      boardState->active = White;
+      // check if rooks present
+      if ( getPieceRowCol(boardState, Row1, ColA) == WhiteRook ) {
+        setCastlingAvailability(castlingAvail, WhiteQueenSide, true);
+      }
+      if ( getPieceRowCol(boardState, Row1, ColH) == WhiteRook ) {
+        setCastlingAvailability(castlingAvail, WhiteKingSide, true);
+      }
+    } else if ( affectedPiece == BlackKing ) {
+      boardState->active = Black;
+      if ( getPieceRowCol(boardState, Row8, ColA) == BlackRook ) {
+        setCastlingAvailability(castlingAvail, BlackQueenSide, true);
+      }
+      if ( getPieceRowCol(boardState, Row8, ColH) == BlackRook ) {
+        setCastlingAvailability(castlingAvail, BlackKingSide, true);
+      }
+    } else if ( affectedPiece == WhiteRook && 
+      getPieceRowCol(boardState, Row1, ColE) == WhiteKing ) {
+      if ( endSquare->row == Row1 && endSquare->column == ColA ) {
+        setCastlingAvailability(castlingAvail, WhiteQueenSide, true);
+      } else if ( endSquare->row == Row1 && endSquare->column == ColH ) {
+        setCastlingAvailability(castlingAvail, WhiteKingSide, true);
+      }
+    } else if ( affectedPiece == BlackRook &&
+      getPieceRowCol(boardState, Row8, ColE) == BlackKing ) {
+      if ( endSquare->row == Row8 && endSquare->column == ColA ) {
+        setCastlingAvailability(castlingAvail, BlackQueenSide, true);
+      } else if ( endSquare->row == Row8 && endSquare->column == ColH ) {
+        setCastlingAvailability(castlingAvail, BlackKingSide, true);
+      }
+    }
+  }
+  // check if some castling options 
+  // became unavailable
+  else if ( changeType == 2 ) {
+    // ignore the endSquare, it is not relevant
+    // when piece is removed from the board
+    updateCastlingAfterPieceMoved(startSquare,
+      endSquare, true, &(boardState->canCastleRooks));
+  }
+  // normal moves, can affect castling and en-passant
+  // 'normal moves' always have valid start 
+  // and end positions
+  else {
+    updateEnpassantTarget(affectedPiece, 
+      startSquare, endSquare,
+      &(boardState->enpassantAvailable));
+
+    updateCastlingAfterPieceMoved(startSquare,
+      endSquare, false, &(boardState->canCastleRooks));
   }
 
 }

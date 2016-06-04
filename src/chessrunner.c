@@ -19,6 +19,8 @@ bool checkNonEmptySquaresOccupied(ChessState*, Row, Column);
 void handleStartAction(ChessState*);
 void tryRollPromotion(ChessState*);
 
+void testFlushPendingPromotionMove(ChessState *state);
+
 /*
 typedef struct chessstate {
 
@@ -74,6 +76,11 @@ void setRunnerMode(
   ChessState *state,
   ChessMode mode) 
 {
+	testFlushPendingPromotionMove(state);
+	// TODO pending promotion should probably 
+	// be checked also here, and maybe even when pausing
+	// to avoid losing the promotion move
+
 	// clean up some data structs?
 	// do some other state keeping
 	clearMoveBuffer(&(state->moveBuf));
@@ -84,6 +91,10 @@ void doAction(
 	ChessState *state,
 	ChessAction action)
 {
+	if ( action != RollPromotionAction ) {
+		testFlushPendingPromotionMove(state);
+	}
+
 	switch ( action ) {
 
 		case PrintPgn:
@@ -292,14 +303,7 @@ void handleSquareChange(
 
 	if ( state->currState == Running ) {
 
-		if ( state->currMode == Play &&
-			isMoveBufferEmpty(&(state->moveBuf)) &&
-			latestMoveIsPromotion(&(state->game)) ) {
-			// promotion can be sent only now
-			// because the promoted to type can be changed
-			// after the move on board is finished
-			printLatestMoveUci(state);
-		}
+		testFlushPendingPromotionMove(state);
 
 		state->moveBuf.change.square.column = change->square.column;
 		state->moveBuf.change.square.row = change->square.row;
@@ -308,9 +312,12 @@ void handleSquareChange(
 		if ( state->currMode == Play ) {
 			bool fullMoveReady = handleMoveBoardChange(
 				&(state->moveBuf), &(state->board), &(state->game));
-			if ( fullMoveReady && 
-				! latestMoveIsPromotion(&(state->game)) ) {
-				printLatestMoveUci(state);
+			if ( fullMoveReady ) {
+				if ( ! latestMoveIsPromotion(&(state->game)) ) {
+					printLatestMoveUci(state);
+				} else {
+					setPendingPromotionMark(&(state->moveBuf));
+				}
 			}
 		} else if ( state->currMode == Setup ) {
 			handleSetupBoardChange(
@@ -319,5 +326,28 @@ void handleSquareChange(
 			// on all ready full moves?
 		}
 
+	}
+}
+
+void testFlushPendingPromotionMove(ChessState *state)
+{
+	if ( state->currMode == Play &&
+		isPendingPromotionMarkSet(&(state->moveBuf)) &&
+		latestMoveIsPromotion(&(state->game)) ) {
+
+		clearPendingPromotionMark(&(state->moveBuf));
+
+		ChessMove *latestMove = getLatestFinMove(&(state->game));
+
+		Piece promotedToPiece = getPromotedToPiece(
+			latestMove);
+
+		swapPiece(promotedToPiece, 
+			&(state->board), &(latestMove->endSquare));
+
+		// promotion can be sent only now
+		// because the promoted to type can be changed
+		// after the move on board is finished
+		printLatestMoveUci(state);
 	}
 }

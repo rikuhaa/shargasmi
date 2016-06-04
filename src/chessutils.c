@@ -127,24 +127,57 @@ ChessMove* getLatestFinMove(ChessGame *game)
   return latestMove;
 }
 
+bool moveIsPromotion(ChessMove *move)
+{
+  MoveType latestType = move->type;
+  return latestType == PromotionQueen || latestType == PromotionKnight ||
+    latestType == PromotionRook || latestType == PromotionBishop;
+}
 
 bool latestMoveIsPromotion(ChessGame *game)
 {
   if ( game->finMovesCount == 0 ) {
     return false;
   }
-  MoveType latestType = getLatestFinMove(game)->type;
-  return latestType == PromotionQueen || latestType == PromotionKnight ||
-    latestType == PromotionRook || latestType == PromotionBishop;
+  return moveIsPromotion(getLatestFinMove(game));
 }
 
-/*
-*
-*/
-char* getSAN(ChessMove* move)
+Piece getPromotedToPiece(ChessMove *move)
 {
-  static char test = 'X';
-  return &test;
+  if ( !moveIsPromotion(move) ) {
+    return Empty;
+  } else {
+    // it would probably not have been bad idea
+    // to code the promoted to as the 'active' piece
+    // instead of type, because the pawn type 
+    // can always be deduced from whether the 
+    // promoted to piece is black or white...
+    if ( move->type == PromotionQueen ) {
+      if ( move->activePiece == WhitePawn ) {
+        return WhiteQueen;
+      } else {
+        return BlackQueen;
+      }
+    } else if ( move->type == PromotionKnight ) {
+      if ( move->activePiece == WhitePawn ) {
+        return WhiteKnight;
+      } else {
+        return BlackKnight;
+      }
+    } else if ( move->type == PromotionRook ) {
+      if ( move->activePiece == WhitePawn ) {
+        return WhiteRook;
+      } else {
+        return BlackRook;
+      }
+    } else {
+      if ( move->activePiece == WhitePawn ) {
+        return WhiteBishop;
+      } else {
+        return BlackBishop;
+      }
+    }
+  }
 }
 
 Piece getPieceForStartPos(BoardPos *pos)
@@ -168,8 +201,7 @@ void setupEmptyBoard(BoardState* boardState) {
   boardState->fullMoveCount = 1;
   boardState->enpassantAvailable.column = ColA;
   boardState->enpassantAvailable.row = Row1;
-  boardState->canCastleRooks = 0 | WhiteKingSide | WhiteQueenSide |
-    BlackKingSide | BlackQueenSide;
+  setNoCastlingAvailability(&(boardState->canCastleRooks));
   int row;
   int column;
   for ( row = 0; row < ROWS; row++ ) {

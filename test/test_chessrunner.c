@@ -364,8 +364,9 @@ void test_morphy_duke_carl_game(void)
 void test_setup_mode(void)
 {
 	char *expStrs[] = {
-		"4k3/8/8/8/8/8/4P3/4K3 w KQkq - 0 1",
-		"4k3/6P1/8/8/4r3/5K2/8/8 w KQkq - 0 1"
+		"4k3/8/8/8/8/8/4P3/4K3 w - - 0 1",
+		"4k3/6P1/8/8/4r3/5K2/8/8 w - - 0 1",
+		"4k3/P5P1/8/8/4r3/5K2/1pp4p/8 w - - 0 1"
 	};
 
 	setRunnerMode(&state, Setup);
@@ -407,5 +408,168 @@ void test_setup_mode(void)
 
 	testOutputReceivedMatches(
 		expStrs, 2);
+
+	// bring in more pawns and get them to promote positions
+	makeSquareChange(Row7, ColB, true);
+	makeSquareChange(Row7, ColB, false);
+	makeSquareChange(Row2, ColB, true);
+
+	makeSquareChange(Row7, ColB, true);
+	makeSquareChange(Row7, ColB, false);
+	makeSquareChange(Row2, ColH, true);
+
+	makeSquareChange(Row7, ColA, true);
+	makeSquareChange(Row7, ColA, false);
+	makeSquareChange(Row2, ColC, true);
+
+	makeSquareChange(Row2, ColD, true);
+	makeSquareChange(Row2, ColD, false);
+	makeSquareChange(Row7, ColA, true);
+
+	doAction(&state, PrintFen);
+
+	testOutputReceivedMatches(
+		expStrs, 3);
+
+}
+
+void test_continue_from_setup_and_promotions(void)
+{
+
+	char *expStrs[] = {
+		"4k3/P5P1/8/8/4r3/5K2/1pp4p/8 w - - 0 1",
+		"g7g8q",
+		"e8d7",
+		"1. g7-g8=Q Ke8-d7 \n",
+		"6Q1/P2k4/8/8/4r3/5K2/1pp4p/8 w - - 1 2",
+		"a7a8n",
+		"b2b1b",
+		"g8g1",
+		"1. g7-g8=Q Ke8-d7 \n2. a7-a8=N b2-b1=B \n"
+		"3. Qg8-g1 ",
+		"N7/3k4/8/8/4r3/5K2/2p4p/1b4Q1 b - - 1 3",
+		"h2g1r",
+		"1. g7-g8=Q Ke8-d7 \n2. a7-a8=N b2-b1=B \n"
+		"3. Qg8-g1 h2xg1=R \n",
+		"N7/3k4/8/8/4r3/5K2/2p5/1b4r1 w - - 0 4",
+	};
+
+	setRunnerMode(&state, Setup);
+
+	doAction(&state, PlayAction);
+
+	// should be empty board ready to be set-up with pieces
+
+	// bring in the kings
+	makeSquareChange(Row8, ColE, true);
+	makeSquareChange(Row1, ColE, true);
+
+	// one pawn to white
+	makeSquareChange(Row2, ColE, true);
+
+	// bring in some more black pieces and then make white 
+	// pawn ready to be promoted
+
+	// black rook
+	makeSquareChange(Row8, ColH, true);
+	// move rook to other square
+	makeSquareChange(Row8, ColH, false);
+	makeSquareChange(Row4, ColE, true);
+
+	// move white king
+	makeSquareChange(Row1, ColE, false);
+	makeSquareChange(Row3, ColF, true);
+
+	// move white pawn to potential promote square
+	makeSquareChange(Row2, ColE, false);
+	makeSquareChange(Row7, ColG, true);
+
+	// bring in more pawns and get them to promote positions
+	makeSquareChange(Row7, ColB, true);
+	makeSquareChange(Row7, ColB, false);
+	makeSquareChange(Row2, ColB, true);
+
+	makeSquareChange(Row7, ColB, true);
+	makeSquareChange(Row7, ColB, false);
+	makeSquareChange(Row2, ColH, true);
+
+	makeSquareChange(Row7, ColA, true);
+	makeSquareChange(Row7, ColA, false);
+	makeSquareChange(Row2, ColC, true);
+
+	makeSquareChange(Row2, ColD, true);
+	makeSquareChange(Row2, ColD, false);
+	makeSquareChange(Row7, ColA, true);
+
+	// test that the board is setup as expected
+	// with many chances for promotion
+
+	doAction(&state, PrintFen);
+
+	testOutputReceivedMatches(
+		expStrs, 1);
+
+	// change from setup mode to play mode
+
+	setRunnerMode(&state, Play);
+
+	doAction(&state, PlayAction);
+
+	// start doing moves, white should be the first active player
+
+	makeSquareChange(Row7, ColG, false);
+	makeSquareChange(Row8, ColG, true);
+
+	makeSquareChange(Row8, ColE, false);
+	makeSquareChange(Row7, ColD, true);
+
+	doAction(&state, PrintPgn);
+	doAction(&state, PrintFen);
+
+	testOutputReceivedMatches(
+		expStrs, 5);
+
+	// test promotions to other types than to queen
+
+	makeSquareChange(Row7, ColA, false);
+	makeSquareChange(Row8, ColA, true);
+
+	// roll from queen to knight
+	doAction(&state, RollPromotionAction);
+
+	makeSquareChange(Row2, ColB, false);
+	makeSquareChange(Row1, ColB, true);
+
+	// roll from queen to bishop
+	doAction(&state, RollPromotionAction);
+	doAction(&state, RollPromotionAction);
+	doAction(&state, RollPromotionAction);
+
+	makeSquareChange(Row8, ColG, false);
+	makeSquareChange(Row1, ColG, true);
+
+	doAction(&state, PrintPgn);
+	doAction(&state, PrintFen);
+
+	testOutputReceivedMatches(
+		expStrs, 10);
+
+	makeSquareChange(Row2, ColH, false);
+	makeSquareChange(Row1, ColG, false);
+	makeSquareChange(Row1, ColG, true);
+
+	doAction(&state, RollPromotionAction);
+	doAction(&state, RollPromotionAction);
+
+	doAction(&state, PrintPgn);
+	doAction(&state, PrintFen);
+
+	testOutputReceivedMatches(
+		expStrs, 13);
+
+}
+
+void test_reset_with_setup_and_play(void)
+{
 
 }

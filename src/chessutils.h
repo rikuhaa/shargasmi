@@ -7,22 +7,6 @@
 extern "C" {
 #endif
 
-/*
-* Checks if the piece is in a position on the board that
-* means that it will be promoted.
-* True if WhitePawn on row 8 or BlackPawn on row 1,
-* false otherwise.
-*/
-extern bool isInPromotePos(Piece piece);
-
-/*
-* Returns true if the given piece is on its correct start
-* position.
-* If called for "meta" Piece (Unknown or Empty) returns
-* false.
-*/
-extern bool isInStartPos(Piece piece);
-
 extern bool updateEnpassantTarget(
 	Piece piece, BoardPos *startPas, 
 	BoardPos *endPos, BoardPos *enpassantSquare);
@@ -37,12 +21,9 @@ extern bool resetsHalfMoveClock(ChessMove *move);
 
 extern bool latestMoveIsPromotion(ChessGame *game);
 
-extern ChessMove *getLatestFinMove(ChessGame *game);
+extern Piece getPromotedToPiece(ChessMove *move);
 
-/*
-*
-*/
-extern char* getSAN(ChessMove* move);
+extern ChessMove *getLatestFinMove(ChessGame *game);
 
 extern int writeMoveLan(char* writeTo, ChessMove* move);
 
