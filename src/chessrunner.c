@@ -18,6 +18,8 @@ bool checkNoneOccupied(ChessState*, Row, Column);
 bool checkNonEmptySquaresOccupied(ChessState*, Row, Column);
 
 void handleStartAction(ChessState*);
+void handlePauseAction(ChessState*);
+void handleResetAction(ChessState*);
 void tryRollPromotion(ChessState*);
 
 void testFlushPendingPromotionMove(ChessState *state);
@@ -89,6 +91,19 @@ void doAction(
 		case RollPromotionAction:
 			tryRollPromotion(state);
 			break;
+
+		case ResetAction:
+			handleResetAction(state);
+			break;
+
+		case PauseAction:
+			handlePauseAction(state);
+			break;
+
+		default:
+			// TODO error
+			break;
+
 	}
 }
 
@@ -122,12 +137,12 @@ void handleResetAction(ChessState *state)
 	state->currState = AfterReset;
 	// TODO if playing:
 	// - reset clock?
-	// - move the pgn to old 
-	// games buffer
-	// - 
+	// - move the pgn to old games buffer
+	// - ..?
 
 	// most of this can though also be 
 	// done just before continuing the game
+	// if state was AfterReset before changing to Play
 
 	state->game.finMovesCount = 0;
 	clearMoveBuffer(&(state->moveBuf));

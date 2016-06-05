@@ -103,4 +103,4 @@ extern void handleSquareChange(
 }
 #endif
 
-#endif // chessmoves_H
+#endif // chessrunner_H
