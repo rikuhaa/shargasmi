@@ -13,13 +13,13 @@ typedef struct chessclock {
 
 	ChessTimeStamp (*getRunningMillis) (void);
 
-	ChessTimeStamp whiteElapsed;
+	ChessElapsedSecTenths whiteElapsed;
 
-	ChessTimeStamp blackElapsed;
+	ChessElapsedSecTenths blackElapsed;
 
 	Player activePlayer;
 
-	ChessTimeStamp elapsedBeforePause;
+	ChessElapsedSecTenths elapsedBeforePause;
 
 	ChessTimeStamp runningStart;
 
@@ -42,9 +42,9 @@ extern void pressPlayerTurnEnd(ChessClock*, Player);
 
 extern Player getClockActivePlayer(ChessClock*);
 
-extern ChessTimeStamp getPauseStrippedTotal(ChessClock*);
+extern ChessElapsedSecTenths getPauseStrippedTotal(ChessClock*);
 
-extern ChessTimeStamp getPlayerClockElapsed(ChessClock*, Player);
+extern ChessElapsedSecTenths getPlayerClockElapsed(ChessClock*, Player);
 
 extern bool isClockPaused(ChessClock*);
 

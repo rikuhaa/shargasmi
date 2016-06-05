@@ -35,7 +35,7 @@ void test_chess_clock_simple_sequence(void)
 
 	currTimeStamp = 2234;
 
-	TEST_ASSERT_EQUAL_INT(1234, 
+	TEST_ASSERT_EQUAL_INT(12, 
 		getPlayerClockElapsed(&clock, White));
 
 	TEST_ASSERT_EQUAL_INT(Black,
@@ -48,13 +48,13 @@ void test_chess_clock_simple_sequence(void)
 	TEST_ASSERT_EQUAL_INT(White,
 		getClockActivePlayer(&clock));
 
-	TEST_ASSERT_EQUAL_INT(1000,
+	TEST_ASSERT_EQUAL_INT(10,
 		getPlayerClockElapsed(&clock, Black));
 
-	TEST_ASSERT_EQUAL_INT(3571,
+	TEST_ASSERT_EQUAL_INT(35,
 		getPauseStrippedTotal(&clock));
 
-	TEST_ASSERT_EQUAL_INT(2571,
+	TEST_ASSERT_EQUAL_INT(25,
 		getPlayerClockElapsed(&clock, White));
 
 }

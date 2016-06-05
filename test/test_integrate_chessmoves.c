@@ -125,7 +125,8 @@ void gameEqualsPgnWithLan(ChessGame* game, char* pgnStr)
 {
 	char pgnBuf[10000];
 
-	int resLength = writePgnMoves(pgnBuf, game, writeMoveLan, NULL);
+	int resLength = writePgnMoves(pgnBuf, 10000, NULL, 
+		game, writeMoveLan, NULL);
 
 	pgnBuf[resLength] = '\0';
 

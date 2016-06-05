@@ -99,14 +99,14 @@ void test_simple_game_with_time(void)
 {
 	char *expStrs[] = {
 		"e2e4", 
-		"1. e2-e4 {[game: 1000] [move: 1000] [own: 1000]} ",
+		"1. e2-e4 {[game: 10] [move: 10] [own: 10]} ",
 		"e7e5",
-		"1. e2-e4 {[game: 1000] [move: 1000] [own: 1000]} "
-		"e7-e5 {[game: 2000] [move: 1000] [own: 1000]} \n",
+		"1. e2-e4 {[game: 10] [move: 10] [own: 10]} "
+		"e7-e5 {[game: 20] [move: 10] [own: 10]} \n",
 		"b1c3",
-		"1. e2-e4 {[game: 1000] [move: 1000] [own: 1000]} "
-		"e7-e5 {[game: 2000] [move: 1000] [own: 1000]} \n"
-		"2. Nb1-c3 {[game: 3000] [move: 1000] [own: 2000]} "
+		"1. e2-e4 {[game: 10] [move: 10] [own: 10]} "
+		"e7-e5 {[game: 20] [move: 10] [own: 10]} \n"
+		"2. Nb1-c3 {[game: 30] [move: 10] [own: 20]} "
 	};
 
 	setRunnerMode(&state, Play);

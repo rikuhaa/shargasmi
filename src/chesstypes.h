@@ -9,7 +9,7 @@ extern "C" {
 
 #define COLUMNS 8
 #define ROWS 8
-#define MAX_MOVES_PER_GAME 500
+#define MAX_MOVES_PER_GAME 200
 
 // 8 per row, 7 times '/' and '/0' to end the string
 #define FEN_POS_MAX_CHARS 72
@@ -23,6 +23,8 @@ typedef enum {
   true
 } bool;
 */
+
+typedef unsigned short int ChessElapsedSecTenths;
 
 typedef enum player {
   Black,
@@ -136,6 +138,9 @@ typedef enum movetype {
 // if there will be mem problems,
 // this data struct could quite easily be packed
 
+// TODO pack/unpack ChessMove and save the packed form
+// in ChessGame struct
+
 typedef struct {
 
   Piece activePiece;
@@ -146,8 +151,8 @@ typedef struct {
 
   MoveType type;
 
-  unsigned long long playerElapsedClockTime;
-  unsigned long long runningGameTime;
+  ChessElapsedSecTenths playerElapsedClockTime;
+  ChessElapsedSecTenths runningGameTime;
 
 } ChessMove;
 
@@ -159,7 +164,7 @@ typedef struct {
 
 } ChessGame;
 
-typedef unsigned int CastlingAvailability;
+typedef unsigned short int CastlingAvailability;
 
 typedef enum castlingavailopt {
   WhiteKingSide = 0x01,
@@ -186,9 +191,9 @@ typedef struct {
   
   BoardPos enpassantAvailable;
   
-  unsigned int halfMoveClock;
+  unsigned short int halfMoveClock;
   
-  unsigned int fullMoveCount;
+  unsigned short int fullMoveCount;
 
 } BoardState;
 
@@ -202,9 +207,9 @@ typedef struct {
 
   BoardPos enpassantAvailable;
 
-  unsigned int halfMoveClock;
+  unsigned short int halfMoveClock;
 
-  unsigned int fullMoveCount;
+  unsigned short int fullMoveCount;
 
 } FEN;
 

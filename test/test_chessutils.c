@@ -904,7 +904,7 @@ void test_write_pgn_lan_simple_game_start(void)
 
 	int halfMoveIndex = 0;
 
-	char resBuffer[1000];
+	char resBuffer[10000];
 
 	gameToTest.moves[0].activePiece = WhitePawn;
 	gameToTest.moves[0].passivePiece = Empty;
@@ -916,7 +916,7 @@ void test_write_pgn_lan_simple_game_start(void)
 
 	gameToTest.finMovesCount = 1;
 
-	int writtenChars = writePgnMoves(resBuffer, &gameToTest,
+	int writtenChars = writePgnMoves(resBuffer, 10000, NULL, &gameToTest,
 		writeMoveLan, NULL);
 
 	resBuffer[writtenChars] = '\0';
@@ -933,7 +933,7 @@ void test_write_pgn_lan_simple_game_start(void)
 
 	gameToTest.finMovesCount = 2;
 
-	writtenChars = writePgnMoves(resBuffer, &gameToTest,
+	writtenChars = writePgnMoves(resBuffer, 10000, NULL, &gameToTest,
 		writeMoveLan, NULL);
 
 	resBuffer[writtenChars] = '\0';
@@ -950,7 +950,7 @@ void test_write_pgn_lan_simple_game_start(void)
 
 	gameToTest.finMovesCount = 3;
 
-	writtenChars = writePgnMoves(resBuffer, &gameToTest,
+	writtenChars = writePgnMoves(resBuffer, 10000, NULL, &gameToTest,
 		writeMoveLan, NULL);
 
 	resBuffer[writtenChars] = '\0';
@@ -967,7 +967,7 @@ void test_write_pgn_lan_simple_game_start(void)
 
 	gameToTest.finMovesCount = 4;
 
-	writtenChars = writePgnMoves(resBuffer, &gameToTest,
+	writtenChars = writePgnMoves(resBuffer, 10000, NULL, &gameToTest,
 		writeMoveLan, NULL);
 
 	resBuffer[writtenChars] = '\0';

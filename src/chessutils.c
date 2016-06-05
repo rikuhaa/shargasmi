@@ -928,7 +928,7 @@ int writeTimeStampInfo(char* writeTo,
 
   int written = 
     sprintf(timeinfoBuffer,
-      "{[game: %Lu] [move: %Lu] [own: %Lu]}", 
+      "{[game: %i] [move: %i] [own: %i]}", 
       move.runningGameTime, 
       move.runningGameTime - moveStartTimeStamp,
       move.playerElapsedClockTime);
@@ -944,7 +944,9 @@ int writeTimeStampInfo(char* writeTo,
 // - ChessGame* the game structure
 // - int half move index to add comments for (0 for white first,
 //      1 for black first, 2 for white second...)
-int writePgnMoves(char* writeTo, ChessGame* game, 
+int writePgnMoves(char* writeTo, int bufferSize,
+  void (*outputPrinter) (char*), 
+  ChessGame* game, 
   int (*singleMoveFormatter) (char*, ChessMove*),
   int (*moveCommentFormatter) (char*, ChessGame*, int))
 {
@@ -999,9 +1001,17 @@ int writePgnMoves(char* writeTo, ChessGame* game,
       writeTo++;
     }
 
+    int currBufferIndex = writeTo - startPointer;
+    if ( currBufferIndex + 1000 > bufferSize ) {
+      writeTo[currBufferIndex] = '\0';
+      (*(outputPrinter))(writeTo);
+      writeTo = startPointer;
+    }
+
   }
 
-  // how many characters were written
+  // how many characters remain to be flushed
+  // if buffer was large this is same as written count
   return writeTo - startPointer;
 
 }

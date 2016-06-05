@@ -16,7 +16,6 @@ extern void updateCastlingAfterPieceMoved(
   	bool ignoreMovedTo,
   	CastlingAvailability *toUpdate);
 
-
 extern bool resetsHalfMoveClock(ChessMove *move);
 
 extern bool latestMoveIsPromotion(ChessGame *game);
@@ -29,9 +28,10 @@ extern int writeMoveLan(char* writeTo, ChessMove* move);
 
 extern int writeMoveUci(char* writeTo, ChessMove* move);
 
-extern int writePgnMoves(char* writeTo, ChessGame* game, 
-  int (*singleMoveFormatter) (char*, ChessMove*),
-  int (*moveCommentFormatter) (char*, ChessGame*, int));
+extern int writePgnMoves(char* buffer, int bufferSize,
+	void (*outputPrinter) (char*), 
+	ChessGame* game, int (*singleMoveFormatter) (char*, ChessMove*),
+  	int (*moveCommentFormatter) (char*, ChessGame*, int));
 
 extern int writeTimeStampInfo(char* writeTo,
 	ChessGame *game, int halfMoveIndex);

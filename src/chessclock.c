@@ -1,11 +1,11 @@
 #include "chessclock.h"
 
-ChessTimeStamp getFromLastStart(ChessClock* clock)
+ChessElapsedSecTenths getFromLastStart(ChessClock* clock)
 {
-	return (*(clock->getRunningMillis))() - clock->runningStart;
+	return ((*(clock->getRunningMillis))() - clock->runningStart) / 100;
 }
 
-ChessTimeStamp getRunningIncrement(ChessClock* clock, bool clear)
+ChessElapsedSecTenths getRunningIncrement(ChessClock* clock, bool clear)
 {
 	ChessTimeStamp runningInc = clock->elapsedBeforePause;
 	if ( ! clock->isPaused ) {
@@ -59,7 +59,7 @@ void pressPlayerTurnEnd(ChessClock* clock, Player player)
 {
 	if ( player == clock->activePlayer ) {
 		
-		ChessTimeStamp addToClock = getRunningIncrement(clock, true);
+		ChessElapsedSecTenths addToClock = getRunningIncrement(clock, true);
 
 		if ( player == White ) {
 			clock->whiteElapsed += addToClock;
@@ -77,22 +77,22 @@ Player getClockActivePlayer(ChessClock* clock)
 	return clock->activePlayer;
 }
 
-ChessTimeStamp getPauseStrippedTotal(ChessClock* clock)
+ChessElapsedSecTenths getPauseStrippedTotal(ChessClock* clock)
 {
 	return clock->whiteElapsed + clock->blackElapsed + 
 		getRunningIncrement(clock, false);
 }
 
-ChessTimeStamp getPlayerClockElapsed(ChessClock* clock, Player player)
+ChessElapsedSecTenths getPlayerClockElapsed(ChessClock* clock, Player player)
 {
 	if ( player == Black ) {
-		ChessTimeStamp runningBlackInc = 0;
+		ChessElapsedSecTenths runningBlackInc = 0;
 		if ( clock->activePlayer == Black ) {
 			runningBlackInc = getRunningIncrement(clock, false);
 		}
 		return clock->blackElapsed + runningBlackInc;
 	} else {
-		ChessTimeStamp runningWhiteInc = 0;
+		ChessElapsedSecTenths runningWhiteInc = 0;
 		if ( clock->activePlayer == White ) {
 			runningWhiteInc = getRunningIncrement(clock, false);
 		}

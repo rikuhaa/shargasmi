@@ -297,7 +297,10 @@ void printFen(ChessState *state)
 
 void printPgnLong(ChessState *state)
 {
-	int lenWritten = writePgnMoves(state->tempStrBuffer, &(state->game), 
+	int lenWritten = writePgnMoves(state->tempStrBuffer,
+		state->tempStrBufferLen,
+		state->outputPrinter,
+	 	&(state->game), 
   		writeMoveLan,
   		writeTimeStampInfo);
 	if ( lenWritten >= state->tempStrBufferLen ) {
@@ -311,7 +314,10 @@ void printPgnLong(ChessState *state)
 
 void printPgn(ChessState *state)
 {
-	int lenWritten = writePgnMoves(state->tempStrBuffer, &(state->game), 
+	int lenWritten = writePgnMoves(state->tempStrBuffer, 
+		state->tempStrBufferLen,
+		state->outputPrinter,
+		&(state->game), 
   		writeMoveLan,
   		NULL);
 	if ( lenWritten >= state->tempStrBufferLen ) {
