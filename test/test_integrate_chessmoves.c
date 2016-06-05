@@ -260,6 +260,37 @@ void test_put_back_to_board_sequence(void)
 
 }
 
+void test_put_back_to_board_sequence_then_normal(void)
+{
+	makeSubMove(ColE, Row2, false);
+
+	TEST_ASSERT_EQUAL_INT(WhitePawn, moveBuf.firstLifted.piece);
+	TEST_ASSERT_EQUAL_INT(ColE, moveBuf.firstLifted.startPos.column);
+	TEST_ASSERT_EQUAL_INT(Row2, moveBuf.firstLifted.startPos.row);
+
+	TEST_ASSERT_EQUAL_INT(Empty, moveBuf.secondLifted.piece);
+
+	TEST_ASSERT_EQUAL_INT(0, game.finMovesCount);
+
+	makeSubMove(ColE, Row2, true);
+
+	// test that moves are ignored
+
+	TEST_ASSERT_EQUAL_INT(Empty, moveBuf.secondLifted.piece);
+	TEST_ASSERT_EQUAL_INT(Empty, moveBuf.firstLifted.piece);
+
+	TEST_ASSERT_EQUAL_INT(0, game.finMovesCount);
+
+	// then do normal start move that should succeed
+
+	makeNormalMove(ColE, Row2, ColE, Row4);
+
+	gameEqualsPgnWithLan(&game,
+		"1. e2-e4 ");
+
+}
+
+
 void test_simple_move_sequence(void) 
 {
 

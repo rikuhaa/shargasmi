@@ -67,6 +67,12 @@ bool handleMoveBoardChange(
 
     if ( moveBuf->change.square.row == moveBuf->firstLifted.startPos.row &&
       moveBuf->change.square.column == moveBuf->firstLifted.startPos.column ) {
+      // put back to the board
+      swapPiece(moveBuf->firstLifted.piece, 
+        boardState, &(moveBuf->change.square));
+
+      // could check that was empty...
+
       // empty buffer to start, but don't 
       // record as a move
 
