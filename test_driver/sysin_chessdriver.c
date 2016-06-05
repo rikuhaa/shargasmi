@@ -9,6 +9,7 @@ static ChessState chess;
 int tryParseSquareChange(char*, SquareChange*);
 bool isOccupied(Row, Column);
 void outputPrinter(char*);
+ChessTimeStamp timeStamper();
 
 int main(void)
 {
@@ -18,7 +19,8 @@ int main(void)
   int chessStrBufferSize = 10000;
   char chessStrBuffer[10000];
 
-  initEmptyChessState(&chess, chessStrBuffer, chessStrBufferSize);
+  initEmptyChessState(&chess, chessStrBuffer, chessStrBufferSize,
+  	&timeStamper);
 
   chess.outputPrinter = &outputPrinter;
   chess.isOccupied = &isOccupied;
@@ -67,6 +69,11 @@ int main(void)
   }
 
   return 0;
+}
+
+ChessTimeStamp timeStamper()
+{
+	return 1234;
 }
 
 int tryParseSquareChange(char* cmd, SquareChange *change)
