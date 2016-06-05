@@ -30,6 +30,9 @@ typedef enum chessaction {
 	// reset clears state
 	// and next play begins from clear state
 	ResetAction,
+	// Play and pause should probably be combined
+	// to play/pause (or this can maybe be run 
+	// in the side sending the signals)
 	PlayAction,
 	// pause does not clear state
 	// next play begins from non-cleared state
