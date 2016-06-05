@@ -3,6 +3,7 @@
 #include "chesstypes.h"
 #include "chessutils.h"
 #include "chessrunner.h"
+#include "chessclock.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -14,12 +15,7 @@ static int currStrInd;
 
 static char tempBuff[10000];
 
-static unsigned long currTimeStamp;
-
-static unsigned long whiteGameClock;
-static unsigned long blackGameClock;
-
-static ChessTimeHandler timeHandler;
+static ChessTimeStamp currTimeStamp;
 
 void makeSquareChange(Row row, Column col, bool nowOccupied) 
 {
@@ -45,20 +41,8 @@ void testOutputReceivedMatches(char** expStrs, int count)
 
 }
 
-unsigned long long playerClockTimeStamper(Player forPlayer)
-{
-	if ( forPlayer == White ) {
-		whiteGameClock += 1000;
-		return whiteGameClock;
-	} else {
-		blackGameClock += 1000;
-		return blackGameClock;
-	}
-}
-
 unsigned long long timeStamper()
 {
-	currTimeStamp += 1000;
 	return currTimeStamp;
 }
 
@@ -77,17 +61,11 @@ void outputPrinter(char *toOutput)
 
 void setUp(void)
 {
-	initEmptyChessState(&state, tempBuff, 10000);
+	initEmptyChessState(
+		&state, tempBuff, 10000, &timeStamper);
 	currStrInd = 0;
 	currTimeStamp = 0;
-	blackGameClock = 0;
-	whiteGameClock = 0;
-	timeHandler.getElapsedClockMillis = 
-		&playerClockTimeStamper;
-	timeHandler.getRunningMillis =
-		&timeStamper;
 	state.outputPrinter = &outputPrinter;
-	state.timeHandler = &timeHandler;
 	state.isOccupied = &isOccupied;
 }
 
@@ -135,29 +113,44 @@ void test_simple_game_with_time(void)
 
 	doAction(&state, PlayAction);
 
+	currTimeStamp = 1000;
+
 	makeSquareChange(Row2, ColE, false);
 	makeSquareChange(Row4, ColE, true);
+
+	doAction(&state, WhiteClockPressed);
 
 	doAction(&state, PrintPgnLong);
 
 	testOutputReceivedMatches(
 		expStrs, 2);
 
+	currTimeStamp = 2000;
+
 	makeSquareChange(Row7, ColE, false);
 	makeSquareChange(Row5, ColE, true);
+
+	doAction(&state, BlackClockPressed);
 
 	doAction(&state, PrintPgnLong);
 
 	testOutputReceivedMatches(
 		expStrs, 4);
 
+	currTimeStamp = 3000;
+
 	makeSquareChange(Row1, ColB, false);
 	makeSquareChange(Row3, ColC, true);
+
+	doAction(&state, WhiteClockPressed);
 
 	doAction(&state, PrintPgnLong);
 
 	testOutputReceivedMatches(
 		expStrs, 6);
+
+	TEST_ASSERT_EQUAL_INT(Black, 
+		getClockActivePlayer(&(state.chessClock)));
 
 }
 

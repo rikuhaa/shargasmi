@@ -22,10 +22,18 @@ void handlePauseAction(ChessState*);
 void handleResetAction(ChessState*);
 void tryRollPromotion(ChessState*);
 
+void handleClockPressed(ChessState*, bool wasBlack);
+
 void testFlushPendingPromotionMove(ChessState *state);
 
+ChessTimeStamp nullTimeStamper()
+{
+	return 0;
+}
+
 void initEmptyChessState(
-	ChessState *state, char *tempStrBuffer, int tempStrBufferLen) 
+	ChessState *state, char *tempStrBuffer, int tempStrBufferLen,
+	ChessTimeStamp (*getRunningMillis)(void)) 
 {
 
 	setupEmptyBoard(&(state->board));
@@ -38,13 +46,19 @@ void initEmptyChessState(
 	state->isOccupied = NULL;
 	state->outputPrinter = NULL;
 	state->errorHandler = NULL;
-	state->timeHandler = NULL;
 
 	// TODO check that tempStrBufferLen is 
 	// at least relatively sane
 
 	state->tempStrBuffer = tempStrBuffer;
 	state->tempStrBufferLen = tempStrBufferLen;
+
+	if ( getRunningMillis == NULL ) {
+		initChessClock(&(state->chessClock), &nullTimeStamper);
+	} else {
+		initChessClock(&(state->chessClock), getRunningMillis);
+	}
+
 }
 
 void setRunnerMode(
@@ -100,11 +114,28 @@ void doAction(
 			handlePauseAction(state);
 			break;
 
+		case WhiteClockPressed:
+			handleClockPressed(state, false);
+			break;
+
+		case BlackClockPressed:
+			handleClockPressed(state, true);
+			break;
+
 		default:
 			// TODO error
 			break;
 
 	}
+}
+
+void handleClockPressed(ChessState *state, bool wasBlack)
+{
+	Player forPlayer = White;
+	if ( wasBlack ) {
+		forPlayer = Black;
+	}
+	pressPlayerTurnEnd(&(state->chessClock), forPlayer);
 }
 
 void tryRollPromotion(ChessState *state)
@@ -144,6 +175,8 @@ void handleResetAction(ChessState *state)
 	// done just before continuing the game
 	// if state was AfterReset before changing to Play
 
+	resetChessClock(&(state->chessClock));
+
 	state->game.finMovesCount = 0;
 	clearMoveBuffer(&(state->moveBuf));
 }
@@ -155,6 +188,7 @@ void handlePauseAction(ChessState *state)
 	// functionality by move start times
 	// to begin with
 	state->currState = Paused;
+	pauseChessClock(&(state->chessClock));
 }
 
 void handleStartAction(ChessState *state)
@@ -183,6 +217,9 @@ void handleStartAction(ChessState *state)
 
 	if ( ok ) {
 		state->currState = Running;
+		if ( state->currMode == Play ) {
+			startChessClock(&(state->chessClock));
+		}
 	} else {
 		// TODO signal error somehow
 		// could just use the error handler
@@ -247,8 +284,6 @@ bool checkNoneOccupied(ChessState* state, Row row, Column col)
 {
 	return ! (*(state->isOccupied))(row, col);
 }
-
-
 
 void printFen(ChessState *state)
 {
@@ -323,19 +358,16 @@ void handleSquareChange(
 				// already here in any case
 				ChessMove *latestMove = 
 						getLatestFinMove(&(state->game));
-				if ( state->timeHandler != NULL ) {
-					Player currPlayer = White;
-					if ( state->board.active == White ) {
-						currPlayer = Black; // already updated for next
-					}
-					latestMove->playerElapsedClockTime =
-						(*(state->timeHandler->getElapsedClockMillis))(currPlayer);
-  					latestMove->runningGameTime = 
-  						(*(state->timeHandler->getRunningMillis))();
-				} else {
-					latestMove->playerElapsedClockTime = 0;
-					latestMove->runningGameTime = 0;
+
+				Player currPlayer = White;
+				if ( state->board.active == White ) {
+					currPlayer = Black; // already updated for next
 				}
+				latestMove->playerElapsedClockTime =
+					getPlayerClockElapsed(&(state->chessClock), currPlayer);
+  				latestMove->runningGameTime = 
+  					getPauseStrippedTotal(&(state->chessClock));
+
 				if ( ! latestMoveIsPromotion(&(state->game)) ) {
 					printLatestMoveUci(state);
 				} else {

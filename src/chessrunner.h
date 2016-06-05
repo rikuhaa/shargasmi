@@ -2,6 +2,7 @@
 #define chessrunner_H
 
 #include "./chesstypes.h"
+#include "./chessclock.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -40,7 +41,10 @@ typedef enum chessaction {
 	// this could maybe be named more generic
 	// and handled like this only under very specific 
 	// conditions...
-	RollPromotionAction
+	RollPromotionAction,
+	// clock change actions
+	WhiteClockPressed,
+	BlackClockPressed
 } ChessAction;
 
 typedef enum chesserrtype {
@@ -49,16 +53,13 @@ typedef enum chesserrtype {
 
 typedef struct chessstate ChessState;
 
-typedef struct timehandler {
-
-	unsigned long long (*getRunningMillis) (void);
-
-	unsigned long long (*getElapsedClockMillis) (Player);
+// TODO ..?
+typedef struct chesssched {
 
 	void (*scheduleTask) ( void (*task) (ChessState*),
 		long delayMillis);
 
-} ChessTimeHandler;
+} ChessScheduler;
 
 typedef struct chessstate {
 
@@ -78,7 +79,7 @@ typedef struct chessstate {
 
 	void (*errorHandler) (ChessErrorType, char*);
 
-	ChessTimeHandler* timeHandler;
+	ChessClock chessClock;
 	
 	char* tempStrBuffer;
 
@@ -87,7 +88,8 @@ typedef struct chessstate {
 } ChessState;
 
 extern void initEmptyChessState(
-	ChessState *state, char* tempStrBuffer, int tempStrBufferLen);
+	ChessState *state, char* tempStrBuffer, int tempStrBufferLen,
+	ChessTimeStamp (*getRunningMillis) (void));
 
 extern void setRunnerMode(
 	ChessState *state, ChessMode mode);

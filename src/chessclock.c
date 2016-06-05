@@ -7,8 +7,10 @@ ChessTimeStamp getFromLastStart(ChessClock* clock)
 
 ChessTimeStamp getRunningIncrement(ChessClock* clock, bool clear)
 {
-	ChessTimeStamp runningInc = getFromLastStart(clock) + 
-		clock->elapsedBeforePause;
+	ChessTimeStamp runningInc = clock->elapsedBeforePause;
+	if ( ! clock->isPaused ) {
+		runningInc += getFromLastStart(clock);
+	}
 	if ( clear ) {
 		clock->runningStart = (*(clock->getRunningMillis))();
 		clock->elapsedBeforePause = 0;
