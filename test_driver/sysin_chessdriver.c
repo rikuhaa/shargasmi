@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <time.h>
+
 static ChessState chess;
 
 int tryParseSquareChange(char*, SquareChange*);
@@ -46,7 +48,11 @@ int main(void)
   		doAction(&chess, PauseAction);
   	} else if ( strcmp("prom", command) == 0 ) {
   		doAction(&chess, RollPromotionAction);
-  	} 
+  	} else if ( strcmp("clock_w", command) == 0 ) {
+  		doAction(&chess, WhiteClockPressed);
+  	} else if ( strcmp("clock_b", command) == 0 ) {
+  		doAction(&chess, BlackClockPressed);
+  	}
   	// modes
   	else if ( strcmp("mode_play", command) == 0 ) {
   		setRunnerMode(&chess, Play);
@@ -73,7 +79,10 @@ int main(void)
 
 ChessTimeStamp timeStamper()
 {
-	return 1234;
+	struct timespec timeNow;
+	clock_gettime(CLOCK_MONOTONIC, &timeNow);
+	return timeNow.tv_sec * 1000UL + 
+		(ChessTimeStamp) (timeNow.tv_nsec / 1000000UL);
 }
 
 int tryParseSquareChange(char* cmd, SquareChange *change)
