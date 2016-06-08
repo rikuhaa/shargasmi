@@ -33,14 +33,16 @@ ChessTimeStamp nullTimeStamper()
 
 void initEmptyChessState(
 	ChessState *state, char *tempStrBuffer, int tempStrBufferLen,
+	ChessMove *moves, int maxMovesPerGame,
 	ChessTimeStamp (*getRunningMillis)(void)) 
 {
 
 	setupEmptyBoard(&(state->board));
-	state->game.finMovesCount = 0;
+
+	initChessGame(&(state->game), moves, maxMovesPerGame);
 
 	clearMoveBuffer(&(state->moveBuf));
-	state->currMode = Play;
+	state->currMode = Config;
 	state->currState = AfterReset;
 
 	state->isOccupied = NULL;
@@ -59,6 +61,11 @@ void initEmptyChessState(
 		initChessClock(&(state->chessClock), getRunningMillis);
 	}
 
+}
+
+void setInitialized(ChessState *state)
+{
+	state->currState = AfterReset;
 }
 
 void setRunnerMode(

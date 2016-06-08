@@ -8,6 +8,8 @@
 #include <string.h>
 #include <stdio.h>
 
+static ChessMove moves[1000];
+
 static ChessState state;
 
 static char outputStrs[1000][10000];
@@ -62,7 +64,8 @@ void outputPrinter(char *toOutput)
 void setUp(void)
 {
 	initEmptyChessState(
-		&state, tempBuff, 10000, &timeStamper);
+		&state, tempBuff, 10000, 
+		moves, 1000, &timeStamper);
 	currStrInd = 0;
 	currTimeStamp = 0;
 	state.outputPrinter = &outputPrinter;

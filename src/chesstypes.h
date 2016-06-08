@@ -143,26 +143,47 @@ typedef enum movetype {
 
 typedef struct {
 
-  Piece activePiece;
-  Piece passivePiece;
-
   BoardPos startSquare;
   BoardPos endSquare;
-
-  MoveType type;
 
   ChessElapsedSecTenths playerElapsedClockTime;
   ChessElapsedSecTenths runningGameTime;
 
+  Piece activePiece;
+  Piece passivePiece;
+
+  MoveType type;
+
 } ChessMove;
+
+// TODO would something like this be useful?
+// maybe for perma-saving games to eeprom
+// without time info to save space?
+#pragma pack(1)
+typedef struct compmove {
+  
+  BoardPos startSquare;
+  BoardPos endSquare;
+
+  Piece activePiece;
+  Piece passivePiece;
+
+  MoveType type;
+} CompChessMove;
+
 
 typedef struct {
 
   int finMovesCount;
   
-  ChessMove moves[MAX_MOVES_PER_GAME];
+  ChessMove *moves;
+
+  int maxMovesPerGame;
 
 } ChessGame;
+
+extern void initChessGame(ChessGame *game, 
+  ChessMove *moves, int maxMoves);
 
 typedef unsigned short int CastlingAvailability;
 

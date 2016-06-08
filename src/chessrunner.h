@@ -15,7 +15,9 @@ extern "C" {
 
 typedef enum chessmode {
   Setup,
-  Play
+  Play,
+  Meta,
+  Config
 } ChessMode;
 
 typedef enum chessrunnerstate {
@@ -63,6 +65,10 @@ typedef struct chesssched {
 
 typedef struct chessstate {
 
+	char* tempStrBuffer;
+
+	int tempStrBufferLen;
+
 	ChessGame game;
 	
 	BoardState board;
@@ -80,15 +86,12 @@ typedef struct chessstate {
 	void (*errorHandler) (ChessErrorType, char*);
 
 	ChessClock chessClock;
-	
-	char* tempStrBuffer;
-
-	int tempStrBufferLen;
 
 } ChessState;
 
 extern void initEmptyChessState(
 	ChessState *state, char* tempStrBuffer, int tempStrBufferLen,
+	ChessMove *moves, int maxMovesPerGame,
 	ChessTimeStamp (*getRunningMillis) (void));
 
 extern void setRunnerMode(

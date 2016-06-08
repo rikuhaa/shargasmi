@@ -25,3 +25,12 @@ void setNoCastlingAvailability(CastlingAvailability *castlingAvail)
 {
   *castlingAvail = 0;
 }
+
+
+void initChessGame(ChessGame *game, 
+  ChessMove *moves, int maxMoves)
+{
+  game->moves = moves;
+  game->maxMovesPerGame = maxMoves;
+  game->finMovesCount = 0;
+}

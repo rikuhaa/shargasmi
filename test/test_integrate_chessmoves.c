@@ -7,15 +7,16 @@ static BoardState board;
 static MoveBuffer moveBuf;
 static ChessGame game;
 
+static ChessMove moves[1000];
+
 void setUp(void)
 {
 	setupStartPos(&board);
 
+	initChessGame(&game, moves, 1000);
+
 	moveBuf.firstLifted.piece = Empty;
 	moveBuf.secondLifted.piece = Empty;
-
-	game.finMovesCount = 0;
-
 }
 
 void tearDown(void)
