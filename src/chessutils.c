@@ -1003,8 +1003,8 @@ int writePgnMoves(char* writeTo, int bufferSize,
 
     int currBufferIndex = writeTo - startPointer;
     if ( currBufferIndex + 1000 > bufferSize ) {
-      writeTo[currBufferIndex] = '\0';
-      (*(outputPrinter))(writeTo);
+      startPointer[currBufferIndex] = '\0';
+      (*(outputPrinter))(startPointer);
       writeTo = startPointer;
     }
 
