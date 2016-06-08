@@ -341,6 +341,11 @@ void bufferToOut(ChessState *state)
 	(*state->outputPrinter)(state->tempStrBuffer);
 }
 
+void sendOutputMessage(ChessState *state, ChessOutMessage message)
+{
+	(*state->outputStateHandler)(message);
+}
+
 void printLatestMoveUci(ChessState *state)
 {
 	int writtenChars = 

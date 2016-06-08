@@ -337,6 +337,12 @@ void handleMoveFinished(
   int currMoveInd = currGame->finMovesCount;
 
   // if max-move, error...
+  // for now, just overwrite latest move on overflow
+  if ( currMoveInd == currGame->maxMovesPerGame ) {
+    currMoveInd--;
+  } else {
+    currGame->finMovesCount++;
+  }
 
   ChessMove *doneMove = &(currGame->moves[currMoveInd]);
 
@@ -350,8 +356,6 @@ void handleMoveFinished(
   doneMove->endSquare.row = endRow;
 
   doneMove->type = type;
-
-  currGame->finMovesCount++;
 
   // update active player and full move number if needed
   if ( boardState->active == Black ) {
