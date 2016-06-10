@@ -47,6 +47,7 @@ void initEmptyChessState(
 
 	state->isOccupied = NULL;
 	state->outputPrinter = NULL;
+	state->outputStateHandler = NULL;
 	state->errorHandler = NULL;
 
 	// TODO check that tempStrBufferLen is 
@@ -61,6 +62,27 @@ void initEmptyChessState(
 		initChessClock(&(state->chessClock), getRunningMillis);
 	}
 
+}
+
+void sendErrorTypeMessage(ChessState *state, ChessErrorType errType)
+{
+	if ( state->errorHandler ) {
+		(*(state->errorHandler))(errType, "");
+	}
+}
+
+void sendOutputMessage(ChessState *state, ChessOutMessage msg)
+{
+	if ( state->outputStateHandler ) {
+		(*(state->outputStateHandler))(NullStateMsg, msg);
+	}
+}
+
+void setOutputState(ChessState *state, ChessOutState msg)
+{
+	if ( state->outputStateHandler ) {
+		(*(state->outputStateHandler))(msg, NullOutputMsg);
+	}
 }
 
 void setInitialized(ChessState *state)
@@ -80,7 +102,32 @@ void setRunnerMode(
 	// clean up some data structs?
 	// do some other state keeping
 	clearMoveBuffer(&(state->moveBuf));
+
+
+	if ( state->currMode == Play && mode != Play ) {
+		handlePauseAction(state); // auto pause when changing
+								  // out of play
+	}
+
+	// TODO should maybe check here too that when changing
+	// back to play, the state must be AfterReset or Paused
+
 	state->currMode = mode;
+
+	if ( mode == Meta ) {
+		setOutputState(state, OutStateMeta);
+	} else if ( mode == Setup ) {
+		setOutputState(state, OutStateSetup);
+	} else if ( mode == Config ) {
+		setOutputState(state, OutStateConfig);
+	} else {
+		if ( state->currState == AfterReset ) {
+			setOutputState(state, OutStateAfterReset);
+		} else {
+			setOutputState(state, OutStatePlayPaused);
+		}
+	}
+
 }
 
 void doAction(
@@ -134,6 +181,9 @@ void doAction(
 			break;
 
 	}
+
+	sendOutputMessage(state, ChessActionFinished);
+
 }
 
 void handleClockPressed(ChessState *state, bool wasBlack)
@@ -186,16 +236,23 @@ void handleResetAction(ChessState *state)
 
 	state->game.finMovesCount = 0;
 	clearMoveBuffer(&(state->moveBuf));
+	setOutputState(state, OutStateAfterReset);
 }
 
 void handlePauseAction(ChessState *state) 
 {
+	if ( state->currState == AfterReset ) {
+		return;
+	}
 	// pause the clock somehow
 	// or maybe implement most of the clock
 	// functionality by move start times
 	// to begin with
 	state->currState = Paused;
 	pauseChessClock(&(state->chessClock));
+
+	setOutputState(state, OutStatePlayPaused);
+
 }
 
 void handleStartAction(ChessState *state)
@@ -226,10 +283,14 @@ void handleStartAction(ChessState *state)
 		state->currState = Running;
 		if ( state->currMode == Play ) {
 			startChessClock(&(state->chessClock));
+			if ( state->board.active == White ) {
+				setOutputState(state, OutStatePlayWhite);
+			} else {
+				setOutputState(state, OutStatePlayBlack);
+			}
 		}
 	} else {
-		// TODO signal error somehow
-		// could just use the error handler
+		sendErrorTypeMessage(state, OccupiedDontMatchState);
 	}
 
 	// this should check that 
@@ -341,11 +402,6 @@ void bufferToOut(ChessState *state)
 	(*state->outputPrinter)(state->tempStrBuffer);
 }
 
-void sendOutputMessage(ChessState *state, ChessOutMessage message)
-{
-	(*state->outputStateHandler)(message);
-}
-
 void printLatestMoveUci(ChessState *state)
 {
 	int writtenChars = 
@@ -391,6 +447,15 @@ void handleSquareChange(
 				} else {
 					setPendingPromotionMark(&(state->moveBuf));
 				}
+
+				sendOutputMessage(state, ChessMoveDone);
+
+				if ( state->board.active == White ) {
+					setOutputState(state, OutStatePlayWhite);
+				} else {
+					setOutputState(state, OutStatePlayBlack);
+				}
+
 			}
 		} else if ( state->currMode == Setup ) {
 			handleSetupBoardChange(

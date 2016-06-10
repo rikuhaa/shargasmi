@@ -13,7 +13,19 @@ extern "C" {
 // or should this class maybe 
 // hold them as statics...
 
+typedef enum outputstate {
+	NullStateMsg,
+	OutStateSetup,
+	OutStateMeta,
+	OutStateConfig,
+	OutStatePlayWhite,
+	OutStatePlayBlack,
+	OutStatePlayPaused,
+	OutStateAfterReset
+} ChessOutState;
+
 typedef enum outputmess {
+	NullOutputMsg,
 	ChessMoveDone,
 	ChessClockChanged,
 	ChessActionFinished
@@ -57,6 +69,8 @@ typedef enum chessaction {
 
 // TODO
 typedef enum chesserrtype {
+	NoError,
+	OccupiedDontMatchState,
 	UnknownMove
 } ChessErrorType;
 
@@ -88,7 +102,7 @@ typedef struct chessstate {
 
 	bool (*isOccupied)(Row row, Column column);
 
-	void (*outputStateHandler)(ChessOutMessage);
+	void (*outputStateHandler)(ChessOutState, ChessOutMessage);
 
 	void (*outputPrinter) (char*);
 
