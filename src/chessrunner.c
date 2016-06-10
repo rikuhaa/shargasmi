@@ -134,9 +134,6 @@ void doAction(
 	ChessState *state,
 	ChessAction action)
 {
-	if ( action != RollPromotionAction ) {
-		testFlushPendingPromotionMove(state);
-	}
 
 	switch ( action ) {
 
@@ -182,8 +179,6 @@ void doAction(
 
 	}
 
-	sendOutputMessage(state, ChessActionFinished);
-
 }
 
 void handleClockPressed(ChessState *state, bool wasBlack)
@@ -209,12 +204,16 @@ void tryRollPromotion(ChessState *state)
 		
 		if ( latestMove->type == PromotionQueen ) {
 			latestMove->type = PromotionKnight;
+			sendOutputMessage(state, PromotionRolledToKnight);
 		} else if ( latestMove->type == PromotionKnight ) {
-			latestMove->type = PromotionRook; 
+			latestMove->type = PromotionRook;
+			sendOutputMessage(state, PromotionRolledToRook);
 		} else if ( latestMove->type == PromotionRook ) {
 			latestMove->type = PromotionBishop;
+			sendOutputMessage(state, PromotionRolledToBishop);
 		} else {
 			latestMove->type = PromotionQueen;
+			sendOutputMessage(state, PromotionRolledToQueen);
 		}
 	}
 
@@ -244,6 +243,9 @@ void handlePauseAction(ChessState *state)
 	if ( state->currState == AfterReset ) {
 		return;
 	}
+
+	testFlushPendingPromotionMove(state);
+
 	// pause the clock somehow
 	// or maybe implement most of the clock
 	// functionality by move start times
@@ -361,6 +363,8 @@ void printFen(ChessState *state)
 	exportFenToString(&fen, state->tempStrBuffer);
 	
 	bufferToOut(state);
+
+	sendOutputMessage(state, FenPrinted);
 }
 
 void printPgnLong(ChessState *state)
@@ -378,6 +382,8 @@ void printPgnLong(ChessState *state)
 	}
 	state->tempStrBuffer[lenWritten] = '\0';
 	bufferToOut(state);
+
+	sendOutputMessage(state, PgnPrinted);
 }
 
 void printPgn(ChessState *state)
@@ -395,6 +401,8 @@ void printPgn(ChessState *state)
 	}
 	state->tempStrBuffer[lenWritten] = '\0';
 	bufferToOut(state);
+
+	sendOutputMessage(state, PgnPrinted);
 }
 
 void bufferToOut(ChessState *state)

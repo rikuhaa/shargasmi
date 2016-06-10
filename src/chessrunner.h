@@ -28,7 +28,12 @@ typedef enum outputmess {
 	NullOutputMsg,
 	ChessMoveDone,
 	ChessClockChanged,
-	ChessActionFinished
+	PgnPrinted,
+	FenPrinted,
+	PromotionRolledToKnight,
+	PromotionRolledToRook,
+	PromotionRolledToBishop,
+	PromotionRolledToQueen
 } ChessOutMessage;
 
 typedef enum chessmode {
@@ -68,6 +73,12 @@ typedef enum chessaction {
 } ChessAction;
 
 // TODO
+// this has to be done in some more clever way that makes 
+// it also easier to clear the error state
+// eg. a flag set with possibilty for different errors
+// like 'wrongStartPos' that is cleared when trying to 
+// start game and set if still wrong (so if it is ok on 
+// next start attempt, also the error flag stays cleared)
 typedef enum chesserrtype {
 	NoError,
 	OccupiedDontMatchState,

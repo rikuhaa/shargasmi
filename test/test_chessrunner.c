@@ -624,6 +624,9 @@ void test_continue_from_setup_and_promotions(void)
 	doAction(&state, RollPromotionAction);
 	doAction(&state, RollPromotionAction);
 
+	// this flushes the final pending promotion
+	doAction(&state, PauseAction);
+
 	doAction(&state, PrintPgn);
 	doAction(&state, PrintFen);
 
