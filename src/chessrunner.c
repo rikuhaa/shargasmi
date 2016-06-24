@@ -188,6 +188,11 @@ void handleClockPressed(ChessState *state, bool wasBlack)
 		forPlayer = Black;
 	}
 	pressPlayerTurnEnd(&(state->chessClock), forPlayer);
+	if ( wasBlack ) {
+		sendOutputMessage(state, ChessClockBlackPressed);
+	} else {
+		sendOutputMessage(state, ChessClockWhitePressed);
+	}
 }
 
 void tryRollPromotion(ChessState *state)
@@ -236,6 +241,7 @@ void handleResetAction(ChessState *state)
 	state->game.finMovesCount = 0;
 	clearMoveBuffer(&(state->moveBuf));
 	setOutputState(state, OutStateAfterReset);
+	sendOutputMessage(state, ChessResetPressed);
 }
 
 void handlePauseAction(ChessState *state) 
@@ -254,7 +260,7 @@ void handlePauseAction(ChessState *state)
 	pauseChessClock(&(state->chessClock));
 
 	setOutputState(state, OutStatePlayPaused);
-
+	sendOutputMessage(state, ChessPausePressed);
 }
 
 void handleStartAction(ChessState *state)
@@ -291,6 +297,11 @@ void handleStartAction(ChessState *state)
 				setOutputState(state, OutStatePlayBlack);
 			}
 		}
+		// if okay now, just clear error led
+		// TODO: in later versions, it should be good to 
+		// actually clear just the start pos specific
+		// flag
+		sendErrorTypeMessage(state, NoError);
 	} else {
 		sendErrorTypeMessage(state, OccupiedDontMatchState);
 	}
@@ -423,6 +434,25 @@ void handleSquareChange(
 	ChessState *state,
 	SquareChange *change)
 {
+
+	// if wanting to setup after reset start position
+	// close error immediately when okay
+	if ( (state->currMode == Play || state->currMode == Config) && 
+		state->currState == AfterReset ) {
+
+		setupStartPos(&(state->board));
+
+		bool ok = testSquares(state, &checkNonEmptySquaresOccupied);
+
+		if ( ok ) {
+			// if okay now, just clear error led
+			// TODO: in later versions, it should be good to 
+			// actually clear just the start pos specific
+			// flag
+			sendErrorTypeMessage(state, NoError);
+		}
+
+	}
 
 	if ( state->currState == Running ) {
 

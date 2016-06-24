@@ -33,7 +33,12 @@ typedef enum outputmess {
 	PromotionRolledToKnight,
 	PromotionRolledToRook,
 	PromotionRolledToBishop,
-	PromotionRolledToQueen
+	PromotionRolledToQueen,
+	ChessClockBlackPressed,
+	ChessClockWhitePressed,
+	ChessPausePressed,
+	ChessResetPressed,
+	CloserToStartPos
 } ChessOutMessage;
 
 typedef enum chessmode {
