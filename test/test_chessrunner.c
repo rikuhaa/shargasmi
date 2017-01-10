@@ -31,7 +31,7 @@ void makeSquareChange(Row row, Column col, bool nowOccupied)
 
 }
 
-void testOutputReceivedMatches(char** expStrs, int count)
+void assertOutputReceivedMatches(char** expStrs, int count)
 {
 
 	TEST_ASSERT_EQUAL_INT(count, currStrInd);
@@ -92,7 +92,7 @@ void test_simple_game(void)
 
 	doAction(&state, PrintFen);
 
-	testOutputReceivedMatches(
+	assertOutputReceivedMatches(
 		expStrs, 3);
 
 }
@@ -125,7 +125,7 @@ void test_simple_game_with_time(void)
 
 	doAction(&state, PrintPgnLong);
 
-	testOutputReceivedMatches(
+	assertOutputReceivedMatches(
 		expStrs, 2);
 
 	currTimeStamp = 2000;
@@ -137,7 +137,7 @@ void test_simple_game_with_time(void)
 
 	doAction(&state, PrintPgnLong);
 
-	testOutputReceivedMatches(
+	assertOutputReceivedMatches(
 		expStrs, 4);
 
 	currTimeStamp = 3000;
@@ -149,7 +149,7 @@ void test_simple_game_with_time(void)
 
 	doAction(&state, PrintPgnLong);
 
-	testOutputReceivedMatches(
+	assertOutputReceivedMatches(
 		expStrs, 6);
 
 	TEST_ASSERT_EQUAL_INT(Black, 
@@ -283,7 +283,7 @@ void test_morphy_duke_carl_game(void)
 	doAction(&state, PrintPgn);
 	doAction(&state, PrintFen);
 
-	testOutputReceivedMatches(
+	assertOutputReceivedMatches(
 		expStrs, 12);
 
 	// w6
@@ -329,7 +329,7 @@ void test_morphy_duke_carl_game(void)
 	doAction(&state, PrintPgn);
 	doAction(&state, PrintFen);
 
-	testOutputReceivedMatches(
+	assertOutputReceivedMatches(
 		expStrs, 12 + 11);
 
 	// b10
@@ -381,8 +381,8 @@ void test_morphy_duke_carl_game(void)
 	doAction(&state, PrintPgn);
 	doAction(&state, PrintFen);
 
-	testOutputReceivedMatches(
-		expStrs, 12 + 11 + 11);
+	assertOutputReceivedMatches(
+	 	expStrs, 12 + 11 + 11);
 
 	// w15
 	// take to-be-captured piece out of board first,
@@ -418,7 +418,7 @@ void test_morphy_duke_carl_game(void)
 	doAction(&state, PrintPgn);
 	doAction(&state, PrintFen);
 
-	testOutputReceivedMatches(
+	assertOutputReceivedMatches(
 		expStrs, 12 + 11 + 11 + 7);
 
 
@@ -447,7 +447,7 @@ void test_setup_mode(void)
 
 	doAction(&state, PrintFen);
 
-	testOutputReceivedMatches(
+	assertOutputReceivedMatches(
 		expStrs, 1);
 
 	// bring in some more black pieces and then make white 
@@ -469,7 +469,7 @@ void test_setup_mode(void)
 	
 	doAction(&state, PrintFen);
 
-	testOutputReceivedMatches(
+	assertOutputReceivedMatches(
 		expStrs, 2);
 
 	// bring in more pawns and get them to promote positions
@@ -491,7 +491,7 @@ void test_setup_mode(void)
 
 	doAction(&state, PrintFen);
 
-	testOutputReceivedMatches(
+	assertOutputReceivedMatches(
 		expStrs, 3);
 
 }
@@ -569,7 +569,7 @@ void test_continue_from_setup_and_promotions(void)
 
 	doAction(&state, PrintFen);
 
-	testOutputReceivedMatches(
+	assertOutputReceivedMatches(
 		expStrs, 1);
 
 	// change from setup mode to play mode
@@ -589,7 +589,7 @@ void test_continue_from_setup_and_promotions(void)
 	doAction(&state, PrintPgn);
 	doAction(&state, PrintFen);
 
-	testOutputReceivedMatches(
+	assertOutputReceivedMatches(
 		expStrs, 5);
 
 	// test promotions to other types than to queen
@@ -614,7 +614,7 @@ void test_continue_from_setup_and_promotions(void)
 	doAction(&state, PrintPgn);
 	doAction(&state, PrintFen);
 
-	testOutputReceivedMatches(
+	assertOutputReceivedMatches(
 		expStrs, 10);
 
 	makeSquareChange(Row2, ColH, false);
@@ -630,7 +630,7 @@ void test_continue_from_setup_and_promotions(void)
 	doAction(&state, PrintPgn);
 	doAction(&state, PrintFen);
 
-	testOutputReceivedMatches(
+	assertOutputReceivedMatches(
 		expStrs, 13);
 
 }

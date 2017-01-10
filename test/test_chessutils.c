@@ -320,7 +320,7 @@ void test_get_piece_for_start_pos(void)
 
 }
 
-void testBoardPiecesMatch(BoardState* boardA, BoardState* boardB)
+void assertBoardPiecesMatch(BoardState* boardA, BoardState* boardB)
 {
 	char debugStr[50]; 
 	for ( int row = ROWS - 1; row >= 0; row-- ) {
@@ -352,7 +352,7 @@ void test_import_fen_start_pos(void)
 
 	setupStartPos(&setupToStartPos);
 
-	testBoardPiecesMatch(&setupToStartPos, &importFromFen);
+	assertBoardPiecesMatch(&setupToStartPos, &importFromFen);
 
 }
 
