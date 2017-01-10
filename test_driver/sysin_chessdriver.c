@@ -21,8 +21,11 @@ int main(void)
   int chessStrBufferSize = 10000;
   char chessStrBuffer[10000];
 
+  int maxChessMoves = 1000;
+  ChessMove moves[1000];
+
   initEmptyChessState(&chess, chessStrBuffer, chessStrBufferSize,
-  	&timeStamper);
+  	moves, maxChessMoves, &timeStamper);
 
   chess.outputPrinter = &outputPrinter;
   chess.isOccupied = &isOccupied;
